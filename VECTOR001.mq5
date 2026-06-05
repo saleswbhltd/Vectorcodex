@@ -620,8 +620,13 @@ bool PlaceOrder(SBreakSlot &slot, bool marketMode)
 
     bool anyPlaced = false;
 
-    // Build common SSetup fields once — shared across both slots
+    // Build common SSetup fields once — shared across both slots.
+    // ZeroMemory is critical: MQL5 does NOT zero-init local structs, so trailMoves,
+    // tp1Hit, beSet, filled etc. would carry stack garbage. That garbage previously
+    // tricked CTradeManager::ManageOpenPositions into journalling phantom TRAIL
+    // closes on never-filled limit orders. See VECTOR001 journal-bug investigation.
     SSetup s1;
+    ZeroMemory(s1);
     s1.obTime      = slot.breakTime;
     s1.obTF        = PERIOD_H1;
     s1.isBull      = isBull;
@@ -956,7 +961,30 @@ int OnInit()
     g_mtf.Init(10, 30);
     g_mtf.SetH1OBDisplayLimit(3);
     g_mgr.Init(InpMagic, &g_journal);
-    g_journal.Init("VECTOR001_trades.csv", "VECTOR001_events.csv", true);
+
+    // Per-run CSV files: in tester mode use a timestamp so each run gets its own file.
+    // TimeCurrent() in tester = backtest start date → unique per date range chosen.
+    // In optimization mode keep the shared name (optimizer handles hundreds of passes).
+    bool isTester = (bool)MQLInfoInteger(MQL_TESTER);
+    bool isOptim  = (bool)MQLInfoInteger(MQL_OPTIMIZATION);
+    string tradesFile = "VECTOR001_trades.csv";
+    string eventsFile = "VECTOR001_events.csv";
+    if(isTester && !isOptim)
+    {
+        MqlDateTime dt;
+        TimeToStruct(TimeCurrent(), dt);
+        string ts = StringFormat("%04d%02d%02d_%02d%02d",
+                                 dt.year, dt.mon, dt.day, dt.hour, dt.min);
+        tradesFile = "VECTOR001_trades_" + ts + ".csv";
+        eventsFile = "VECTOR001_events_" + ts + ".csv";
+
+        // CJournal always opens append-mode. Re-running the same date range would
+        // accumulate old data — wipe per-run files first so each test starts clean.
+        if(FileIsExist(tradesFile, FILE_COMMON)) FileDelete(tradesFile, FILE_COMMON);
+        if(FileIsExist(eventsFile, FILE_COMMON)) FileDelete(eventsFile, FILE_COMMON);
+        PrintFormat("V1 journal (fresh): %s / %s", tradesFile, eventsFile);
+    }
+    g_journal.Init(tradesFile, eventsFile, !isOptim);
 
     g_bull.Reset();
     g_bear.Reset();

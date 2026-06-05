@@ -1,10 +1,33 @@
 # CLAUDE.md — Vector
 
+## Current Folder Split
+
+This folder is the Claude-run Vector project.
+
+- `/home/cmake/Vector` owns `VECTOR001`, `VECTOR002`, and `VECTOR003`.
+- `/home/cmake/Vectorcodex/VECTOR80` owns the Codex-run `VECTOR80` series.
+- `/home/cmake/VectorShared` is the shared research/model/data layer used by both projects.
+
+Important symlinks:
+
+```text
+/home/cmake/Vector/research -> /home/cmake/VectorShared/research
+/home/cmake/Vector/models   -> /home/cmake/VectorShared/models
+```
+
+Use `/home/cmake/Vector/research` and `/home/cmake/Vector/models` normally from this project; the symlinks resolve to the shared canonical location.
+
 ## What this project is
 
-**VECTOR001** — SMC-inspired structural EA. H4 reads major bias, H1 ZigZag generates entry signals (BOS + ChoCh both directions), OB limit order entry with market fallback.
+**Two main Claude EAs in this directory, plus VECTOR003 bridge work:**
+
+**VECTOR002** — research-validated M5 quality + M1 execution. Pivot detected by 20-pip M5 ZigZag; filtered by ATR/d2low/lag gates; entry triggered when M1 retraces +5 pips from pivot extreme. SL=10 / 10-pip trail / 60-min timeout. **2026 OOS Jan-Jun: 108 trades, +11.5 pips/trade, 74% WR, +1238 pips.** Full research pipeline in `research/`.
+
+**VECTOR001** — SMC-inspired structural EA (earlier work). H4 reads major bias, H1 ZigZag generates entry signals (BOS + ChoCh both directions), OB limit order entry with market fallback.
 
 This is a **different concept** from OTT001 (mean-reversion). VECTOR001 trades structural breaks with TP at next H1/H4 swing level.
+
+`VECTOR80_BrokerReplay.mq5` and `VECTOR80_Prototype.mq5` still exist in this folder from earlier work, but Codex now has canonical copies under `/home/cmake/Vectorcodex/VECTOR80/ea/`. Treat `/home/cmake/Vectorcodex/VECTOR80` as the active VECTOR80 workspace.
 
 ## Files
 
@@ -13,6 +36,7 @@ This is a **different concept** from OTT001 (mean-reversion). VECTOR001 trades s
 | `VECTOR001.mq5` | The EA — compile and attach to EURUSD M5 |
 | `VECTOR001_step1_research.py` | Step 1 signal frequency research (Python, uses H1 data) |
 | `deploy.sh` | Copy EA to MT5 Advisors/ folder |
+| `CLAUDE_HANDOFF_2026-06-04.md` | Current handoff describing the folder split and shared paths |
 
 ## Include dependencies (in MT5)
 
