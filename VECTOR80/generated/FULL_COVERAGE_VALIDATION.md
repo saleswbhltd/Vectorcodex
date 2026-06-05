@@ -14,9 +14,10 @@ Training remains frozen at:
 
 ## Output Checks
 
-- Eligible engine/bar score rows: `39,338`
-- Unique eligible M5 bars: `12,215`
-- Rows at or above engine threshold: `60`
+- Engine/bar score rows: `152,328`
+- Unique M5 bars: `19,041`
+- Engines scored per bar: `8`
+- Rows at or above engine threshold: `80`
 - Original historical score keys: `42`
 - Original keys present in the full file: `42`
 - Duplicate `time + engine_id` rows: `0`

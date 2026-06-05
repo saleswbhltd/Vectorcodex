@@ -332,7 +332,12 @@ def fit_engines():
     return fitted, feats
 
 
-def prepare_live_panel(ticks_path: Path, events: pd.DataFrame, feats: list[str]) -> pd.DataFrame:
+def prepare_live_panel(
+    ticks_path: Path,
+    events: pd.DataFrame,
+    feats: list[str],
+    fill_values: pd.Series | None = None,
+) -> pd.DataFrame:
     ticks = read_ticks(ticks_path)
     panel = build_broker_panel(ticks)
     panel = add_m5_indicators(panel)
@@ -347,9 +352,9 @@ def prepare_live_panel(ticks_path: Path, events: pd.DataFrame, feats: list[str])
     if missing:
         raise SystemExit(f"live panel is missing required feature columns: {missing[:20]}")
     X = panel[feats].replace([np.inf, -np.inf], np.nan)
-    # Fill from live medians first. Remaining early-window NaNs are filled with 0,
-    # matching the research helper's final fallback.
-    X = X.fillna(X.median(numeric_only=True)).fillna(0.0)
+    if fill_values is None:
+        fill_values = X.median(numeric_only=True)
+    X = X.fillna(fill_values).fillna(0.0)
     return X
 
 
@@ -380,8 +385,8 @@ def main() -> None:
         raise SystemExit("no missing-score VECTOR80 candidates found in events log")
     print(f"candidate rows from events: {len(events)}")
 
-    fitted, feats = fit_engines()
-    live_X = prepare_live_panel(args.ticks, events, feats)
+    fitted, feats, fill_values, _, _ = fit_engine_bundle()
+    live_X = prepare_live_panel(args.ticks, events, feats, fill_values)
 
     rows = []
     missing_feature_times = []

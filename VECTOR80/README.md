@@ -16,8 +16,10 @@ This folder is the Codex-owned VECTOR80 EA workspace.
 | `ea/VECTOR80_Prototype.mq5` | Earlier VECTOR80 prototype source |
 | `mt5_scripts/VECTOR80_BrokerTickExport_Current.mq5` | MT5 script to export fresh broker ticks for score refresh |
 | `scripts/refresh_vector80_scores.py` | Python scorer that refreshes `VECTOR80_model_scores.csv` from exported ticks and EA missing-score events |
-| `scripts/generate_vector80_full_scores.py` | Leakage-safe generator for every eligible M5 engine/bar in an OOS period |
+| `scripts/generate_vector80_full_scores.py` | Leakage-safe generator for every M5 bar and all eight engines in an OOS period |
+| `scripts/generate_vector80_broker_scores.py` | All-bar scorer for a fresh broker tick export |
 | `presets/VECTOR80_BrokerReplay_FullCoverage.set` | MT5 validation preset using the full OOS score file with demo fallback disabled |
+| `presets/VECTOR80_BrokerReplay_DemoAllBars.set` | Demo preset using refreshed Python broker scores with no heuristic fallback |
 | `generated/VECTOR80_model_scores_full_oos.csv` | Generated March 1-June 1, 2026 score coverage for MT5 |
 | `generated/FULL_COVERAGE_VALIDATION.md` | Generation checks, counts, and exact Strategy Tester rerun procedure |
 | `research` | Symlink to `/home/cmake/VectorShared/research` |
@@ -90,7 +92,7 @@ The generator:
 
 - trains all eight engines only on `2025-06-02` through `2026-02-28`;
 - uses training-period medians for missing-feature imputation;
-- scores every stage-1 eligible M5 bar from `2026-03-01` through
+- scores every M5 bar for all eight engines from `2026-03-01` through
   `2026-06-01 23:55`;
 - writes CSV timestamps in research time, leaving the EA to apply
   `InpScoreTimeShiftMin=180`;
@@ -101,3 +103,19 @@ Copy `generated/VECTOR80_model_scores_full_oos.csv` to MT5
 `presets/VECTOR80_BrokerReplay_FullCoverage.set`, and rerun EURUSD M5 with real
 ticks over the same OOS period. Do not enable demo exploration or heuristic
 fallback for this comparison.
+
+## Demo All-Bar Scores
+
+Compile and run `VECTOR80_BrokerTickExport_Current.mq5`. Its default
+`InpTo=0` exports through the current broker time. Then run:
+
+```bash
+cd /home/cmake/Vectorcodex/VECTOR80
+python3 scripts/generate_vector80_broker_scores.py
+```
+
+Copy `generated/VECTOR80_model_scores_broker_all_bars.csv` to MT5
+`Terminal\Common\Files`, then load
+`presets/VECTOR80_BrokerReplay_DemoAllBars.set` on EURUSD M5. This preset keeps
+validated engine thresholds, disables heuristic fallback, uses `0.1%` risk,
+and limits the EA to two open positions.

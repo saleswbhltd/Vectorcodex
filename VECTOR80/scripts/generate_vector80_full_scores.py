@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate leakage-safe VECTOR80 scores for every eligible M5 candidate bar.
+Generate leakage-safe VECTOR80 scores for every M5 bar and all engines.
 
 Models are trained only on the frozen development window ending 2026-02-28.
 The requested scoring period is never used for target construction, fitting, or
@@ -73,20 +73,17 @@ def generate_scores(
     if end < start:
         raise SystemExit("scoring end must not be earlier than scoring start")
 
-    fitted, feats, fill_values, step64, rules = fit_engine_bundle()
+    fitted, feats, fill_values, step64, _ = fit_engine_bundle()
     panel, X = prepare_scoring_features(end, feats, fill_values, step64)
     window = (panel.index >= start) & (panel.index <= end)
     if not window.any():
         raise SystemExit(f"no panel bars found between {start} and {end}")
 
+    indices = np.flatnonzero(window)
+    bar_times = panel.index[indices]
     frames = []
     for spec in ENGINES:
-        eligible = step64.stage1_mask(panel, rules, [spec.label]) & window
-        indices = np.flatnonzero(eligible)
-        if not len(indices):
-            continue
         scores = fitted[spec.engine_id].predict_proba(X.iloc[indices])[:, 1]
-        bar_times = panel.index[indices]
         frames.append(
             pd.DataFrame(
                 {
@@ -103,7 +100,7 @@ def generate_scores(
         )
 
     if not frames:
-        raise SystemExit("no eligible candidate bars were generated")
+        raise SystemExit("no score rows were generated")
 
     diagnostics = pd.concat(frames, ignore_index=True).sort_values(
         ["bar_time", "engine_id"]
@@ -115,7 +112,7 @@ def generate_scores(
 
 def print_summary(diagnostics: pd.DataFrame) -> None:
     summary = diagnostics.groupby("engine_id", sort=False).agg(
-        eligible_bars=("score", "size"),
+        scored_bars=("score", "size"),
         above_threshold=("passes_threshold", "sum"),
         max_score=("score", "max"),
         mean_score=("score", "mean"),

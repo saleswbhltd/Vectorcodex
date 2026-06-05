@@ -8,7 +8,7 @@
 
 input string   InpSymbol     = "EURUSD";
 input datetime InpFrom       = D'2026.06.01 00:00';
-input datetime InpTo         = D'2026.06.05 00:00';
+input datetime InpTo         = 0; // 0 = current broker time
 input int      InpChunkHours = 6;
 
 string DateTag(datetime t)
@@ -20,7 +20,8 @@ string DateTag(datetime t)
 
 void OnStart()
 {
-   if(InpTo <= InpFrom)
+   datetime export_to = InpTo > 0 ? InpTo : TimeCurrent();
+   if(export_to <= InpFrom)
    {
       Alert("InpTo must be after InpFrom");
       return;
@@ -33,7 +34,7 @@ void OnStart()
 
    int chunk_hours = MathMax(1, InpChunkHours);
    string fname = StringFormat("VECTOR80_BROKER_TICKS_%s_%s_%s.csv",
-                               InpSymbol, DateTag(InpFrom), DateTag(InpTo));
+                               InpSymbol, DateTag(InpFrom), DateTag(export_to));
    int fh = FileOpen(fname, FILE_WRITE | FILE_CSV | FILE_COMMON | FILE_ANSI, ',');
    if(fh == INVALID_HANDLE)
    {
@@ -45,11 +46,11 @@ void OnStart()
 
    ulong total = 0;
    datetime chunk_from = InpFrom;
-   while(chunk_from < InpTo)
+   while(chunk_from < export_to)
    {
       datetime chunk_to = chunk_from + chunk_hours * 3600;
-      if(chunk_to > InpTo)
-         chunk_to = InpTo;
+      if(chunk_to > export_to)
+         chunk_to = export_to;
 
       MqlTick ticks[];
       ulong from_msc = (ulong)chunk_from * 1000;
