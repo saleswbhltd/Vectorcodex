@@ -1,0 +1,10 @@
+.agents/
+.codex/
+.git/
+_archive/
+shared/
+**/__pycache__/
+**/*.pyc
+*.bundle
+VECTOR80/.codex/
+VECTOR80/generated/*_diagnostics.csv
