@@ -1,0 +1,27 @@
+TICK CALIBRATION VERIFICATION REPORT
+============================================================
+
+Broker bars: 19,567  (2025-11-30 22:05:00 → 2026-06-04 20:55:00)
+Dukascopy bars: 105,332  (2025-01-01 22:00:00 → 2026-06-01 23:55:00)
+Overlap bars: 18,739
+BAR ALIGNMENT: range_spearman=0.9355  tickvol_spearman=0.8903  n=18,253
+  INFO: range_spearman=0.935 (low expected across data providers)
+
+VERIFICATION (KS test, calibrated Dukascopy vs broker):
+  tick_count                          KS=0.003  p=1.000  mean_shift=0.217  [PASS]
+  median_tick_interval_ms             KS=0.004  p=0.998  mean_shift=27.531  [PASS]
+  max_tick_interval_ms                KS=0.005  p=0.983  mean_shift=83167.420  [PASS]
+  spread_avg                          KS=0.004  p=0.997  mean_shift=0.000  [PASS]
+  spread_max                          KS=0.346  p=0.000  mean_shift=0.082  [WARN]
+  bid_aggressor_pct                   KS=0.019  p=0.002  mean_shift=0.007  [WARN]
+  ask_aggressor_pct                   KS=0.019  p=0.002  mean_shift=0.002  [WARN]
+  imbalance                           KS=0.040  p=0.000  mean_shift=0.023  [WARN]
+  tick_velocity_first_half            KS=0.023  p=0.000  mean_shift=0.003  [WARN]
+  tick_velocity_second_half           KS=0.018  p=0.005  mean_shift=0.000  [WARN]
+  vel_ratio_2nd_to_1st                KS=0.015  p=0.034  mean_shift=0.000  [WARN]
+  max_run_up_pips_intrabar            KS=0.075  p=0.000  mean_shift=0.027  [WARN]
+  max_run_dn_pips_intrabar            KS=0.078  p=0.000  mean_shift=0.031  [WARN]
+  ticks_at_high_pct                   KS=0.004  p=1.000  mean_shift=0.000  [PASS]
+  ticks_at_low_pct                    KS=0.002  p=1.000  mean_shift=0.004  [PASS]
+
+Overall: SOME FEATURES WARN (ks p <= 0.05)

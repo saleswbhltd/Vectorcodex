@@ -1,0 +1,272 @@
+{
+  "sell": {
+    "side": "SELL",
+    "lr_auc_cv": 0.6113910422049956,
+    "rf_auc_cv": 0.587962962962963,
+    "rf_importance": [
+      [
+        "atr14_pips",
+        0.15654094402949054
+      ],
+      [
+        "range_pips",
+        0.12584280073741694
+      ],
+      [
+        "minus_di",
+        0.10961408178888789
+      ],
+      [
+        "body_pips",
+        0.0923857364611962
+      ],
+      [
+        "bb_width_pips",
+        0.07935001544343573
+      ],
+      [
+        "rsi14",
+        0.07712502723393924
+      ],
+      [
+        "stoch_k",
+        0.07316475744167361
+      ],
+      [
+        "plus_di",
+        0.06680486264720739
+      ],
+      [
+        "confirm_lag",
+        0.06072495628097927
+      ],
+      [
+        "stoch_d",
+        0.05703250044258692
+      ],
+      [
+        "bb_pctB",
+        0.05678886252629245
+      ],
+      [
+        "bars_since_prev",
+        0.04462545496689382
+      ]
+    ],
+    "threshold_curve": [
+      {
+        "thresh": 0.3,
+        "n": 669,
+        "precision": 0.42451420029895365,
+        "coverage": 0.44304635761589406
+      },
+      {
+        "thresh": 0.35,
+        "n": 309,
+        "precision": 0.5307443365695793,
+        "coverage": 0.20463576158940397
+      },
+      {
+        "thresh": 0.4,
+        "n": 52,
+        "precision": 0.7115384615384616,
+        "coverage": 0.03443708609271523
+      },
+      {
+        "thresh": 0.45,
+        "n": 1,
+        "precision": 1.0,
+        "coverage": 0.0006622516556291391
+      },
+      {
+        "thresh": 0.5,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.55,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.6000000000000001,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.65,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.7,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.75,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.8,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.85,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      }
+    ],
+    "n_total": 1510,
+    "n_good": 430,
+    "base_rate": 0.2847682119205298
+  },
+  "buy": {
+    "side": "BUY",
+    "lr_auc_cv": 0.589146865951286,
+    "rf_auc_cv": 0.6036476777898736,
+    "rf_importance": [
+      [
+        "range_pips",
+        0.19283934372904962
+      ],
+      [
+        "atr14_pips",
+        0.1497987178591982
+      ],
+      [
+        "confirm_lag",
+        0.09467622888911519
+      ],
+      [
+        "stoch_k",
+        0.08399549699370719
+      ],
+      [
+        "bb_width_pips",
+        0.07630858437249391
+      ],
+      [
+        "stoch_d",
+        0.07009561324473432
+      ],
+      [
+        "body_pips",
+        0.06954044076180248
+      ],
+      [
+        "macd_hist",
+        0.06686461623275092
+      ],
+      [
+        "rsi14",
+        0.06403741731873606
+      ],
+      [
+        "bb_pctB",
+        0.05367123115803156
+      ],
+      [
+        "minus_di",
+        0.039643803215459614
+      ],
+      [
+        "bars_since_prev",
+        0.03852850622492122
+      ]
+    ],
+    "threshold_curve": [
+      {
+        "thresh": 0.3,
+        "n": 963,
+        "precision": 0.40602284527518173,
+        "coverage": 0.6377483443708609
+      },
+      {
+        "thresh": 0.35,
+        "n": 710,
+        "precision": 0.4422535211267606,
+        "coverage": 0.47019867549668876
+      },
+      {
+        "thresh": 0.4,
+        "n": 197,
+        "precision": 0.6548223350253807,
+        "coverage": 0.1304635761589404
+      },
+      {
+        "thresh": 0.45,
+        "n": 3,
+        "precision": 1.0,
+        "coverage": 0.001986754966887417
+      },
+      {
+        "thresh": 0.5,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.55,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.6000000000000001,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.65,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.7,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.75,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.8,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      },
+      {
+        "thresh": 0.85,
+        "n": 0,
+        "precision": null,
+        "coverage": 0.0
+      }
+    ],
+    "n_total": 1510,
+    "n_good": 476,
+    "base_rate": 0.3152317880794702
+  },
+  "params": {
+    "threshold_pips": 15,
+    "target_pips": 15,
+    "stop_pips": 10,
+    "lookahead_bars": 24
+  }
+}

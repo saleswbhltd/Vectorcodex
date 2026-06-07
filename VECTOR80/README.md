@@ -18,6 +18,9 @@ This folder is the Codex-owned VECTOR80 EA workspace.
 | `scripts/refresh_vector80_scores.py` | Python scorer that refreshes `VECTOR80_model_scores.csv` from exported ticks and EA missing-score events |
 | `scripts/generate_vector80_full_scores.py` | Leakage-safe generator for every M5 bar and all eight engines in an OOS period |
 | `scripts/generate_vector80_broker_scores.py` | All-bar scorer for a fresh broker tick export |
+| `scripts/vector80_live_bridge.py` | Persistent request/response scoring bridge with heartbeat |
+| `windows/Install-VECTOR80BridgeTask.ps1` | One-time Windows scheduled-task installer |
+| `LIVE_BRIDGE_DESIGN.md` | Live pipeline contract, frequencies, alerts, and safeguards |
 | `presets/VECTOR80_BrokerReplay_FullCoverage.set` | MT5 validation preset using the full OOS score file with demo fallback disabled |
 | `presets/VECTOR80_BrokerReplay_DemoAllBars.set` | Demo preset using refreshed Python broker scores with no heuristic fallback |
 | `generated/VECTOR80_model_scores_full_oos.csv` | Generated March 1-June 1, 2026 score coverage for MT5 |
@@ -94,8 +97,8 @@ The generator:
 - uses training-period medians for missing-feature imputation;
 - scores every M5 bar for all eight engines from `2026-03-01` through
   `2026-06-01 23:55`;
-- writes CSV timestamps in research time, leaving the EA to apply
-  `InpScoreTimeShiftMin=180`;
+- writes CSV timestamps in UTC research time; the EA automatically derives the
+  broker offset with no time-shift input required;
 - writes the MT5 score file separately from diagnostics.
 
 Copy `generated/VECTOR80_model_scores_full_oos.csv` to MT5
@@ -119,3 +122,142 @@ Copy `generated/VECTOR80_model_scores_broker_all_bars.csv` to MT5
 `presets/VECTOR80_BrokerReplay_DemoAllBars.set` on EURUSD M5. This preset keeps
 validated engine thresholds, disables heuristic fallback, uses `0.1%` risk,
 and limits the EA to two open positions.
+
+## Live Demo Bridge
+
+The live preset now uses `VECTOR80_model_scores_live.csv`, requires a fresh
+Python heartbeat, disables heuristic fallback, and uses exact score timestamps.
+Install automatic bridge supervision once from Windows PowerShell:
+
+```powershell
+& "\\wsl.localhost\Ubuntu\home\cmake\Vectorcodex\VECTOR80\windows\Install-VECTOR80BridgeTask.ps1"
+```
+
+Compile the updated `ea\VECTOR80_BrokerReplay.mq5`, copy the live preset into
+the terminal Presets folder, and load it on EURUSD M5. See
+`LIVE_BRIDGE_DESIGN.md` for the runtime contract and failure behavior.
+
+## Adaptive UTC Threshold Rule
+
+`VECTOR80_BrokerReplay` includes an adjustable threshold rule based on the
+time-zone study:
+
+- active window: `00:00-02:00 UTC`;
+- threshold reduction: `0.08`;
+- minimum allowed score: `0.70`;
+- stops, targets, engine routing and cooldowns remain unchanged.
+
+Set `InpAdaptiveAllowEntries=false` to stop adaptive trades while retaining
+shadow-candidate logging. Set `InpAdaptiveTimeRuleEnabled=false` to remove the
+time rule completely. `InpAdaptiveStartUtcMinutes`,
+`InpAdaptiveEndUtcMinutes`, `InpAdaptiveThresholdDelta` and
+`InpAdaptiveMinScore` are adjustable inputs.
+
+`VECTOR80_live_adaptive_thresholds.csv` records all candidates within
+`InpAdaptiveResearchMaxDelta` of their validated threshold throughout the day,
+not only candidates inside the active window. Each candidate receives a
+`TARGET`, `STOP` or `TIMEOUT` outcome using the same engine stop, target and
+timeout. The row also records UTC slot, score gap and MARKET_MAP state, allowing
+later threshold optimization without changing the live rule during collection.
+
+Analyze completed outcomes with:
+
+```bash
+python3 VECTOR80/scripts/analyze_vector80_adaptive_log.py \
+  /path/to/VECTOR80_live_adaptive_thresholds.csv --rule-window-only
+```
+
+The report scans candidate threshold deltas and groups results by UTC slot and
+engine. It requires 30 completed outcomes by default before labeling a result
+eligible for recommendation, and ranks eligible deltas by the 95% Wilson lower
+confidence bound rather than raw win rate.
+
+## Automatic Time HUD
+
+`include/VECTOR_TIME/VectorTime.mqh` provides a reusable `CVectorTime` service.
+It measures the live MT5 trade-server offset against UTC and rechecks it every
+30 seconds. VECTOR80 uses that detected offset for the adaptive UTC rule and
+for MARKET_MAP's live heatmap/time-of-day lookup. Strategy Tester and historical
+studies retain date-aware broker DST conversion for reproducible old bars.
+If automatic synchronization is unavailable, stale or inconsistent, VECTOR80
+blocks new entries, displays a red `VECTOR TIME ERROR - CHECK EA` warning and
+sends an alert/notification. Trading resumes automatically after time health
+recovers.
+
+The chart HUD displays UTC, broker and computer-local clocks, plus Tokyo,
+London and New York clocks. London and New York daylight-saving changes are
+calculated from their regional calendars. Each market line shows either the
+remaining time until its local `17:00` session end or until its next opening
+(Tokyo `09:00`, London/New York `08:00`).
+
+Use `InpTimeHudEnabled` to show or hide it. Position, font size and color are
+also EA inputs.
+
+## MARKET_MAP
+
+`include/MARKET_MAP/MarketMap.mqh` is a reusable, non-trading market-state
+analyzer. It exposes direction, structure, volatility phase, transition,
+strength, liquidity, exhaustion and supporting diagnostics from completed M5
+bars.
+
+```cpp
+#include <MARKET_MAP/MarketMap.mqh>
+
+CMarketMap map;
+MarketMapState state;
+
+map.Init(_Symbol, PERIOD_M5, MM_MODE_NATIVE);
+map.Update();
+if(map.GetState(state))
+   Print(MarketMapDirectionName(state.direction), " ",
+         MarketMapStructureName(state.structure), " ",
+         MarketMapRegimeName(state.regime));
+```
+
+The observer dashboard is `indicators/MARKET_MAP_Dashboard.mq5`. Version 0.2
+uses native MT5 prices and indicators plus historical volatility context. It
+does not alter VECTOR80 trades. Forecast structures are retained for a future
+validated provider but are explicitly unavailable in version 0.2. See
+`docs/MARKET_MAP_SPEC.md` for the state, forecast, time and data contracts.
+
+`ea/MARKET_MAP_Test.mq5` is the non-trading Strategy Tester harness. It records
+every completed M5 state to CSV and demonstrates a conservative trend-filter
+integration for other EAs.
+
+Research timestamps are UTC. RoboForex server timestamps are converted using
+exact `Europe/Helsinki` EET/EEST rules and broker/Dukascopy alignment must pass
+before model training.
+
+The completed indicator, forecast, trend and regime studies are indexed in
+`docs/MARKET_MAP_RESEARCH_INDEX.md`. Their durable snapshot is stored under
+`/home/cmake/VectorShared/research/MARKET_MAP`, available from Windows as
+`\\wsl.localhost\Ubuntu\home\cmake\VectorShared\research\MARKET_MAP`.
+
+The historical day/time visualization is
+`generated/EURUSD_MARKET_MAP_HEATMAPS.html`. It contains direction, structure,
+volatility, strength and cross-map overlap views using calibrated UTC history.
+
+`generated/EURUSD_MARKET_MAP_HISTORICAL_ZONES_2023_2025.html` combines the same
+Historical Zones maps for 2023, 2024 and 2025 at 15-minute and 5-minute
+resolution.
+
+`generated/EURUSD_MARKET_MAP_TRADABILITY.html` adds 15-minute volume,
+liquidity, spread, path-cleanliness and strategy-fit zones, validated against
+March-June 2026 with 30-minute parent confirmation.
+
+`generated/MARKET_MAP_TRADABILITY_2024Q4_VALIDATION.md` independently checks
+the frozen zones against October-December 2024 broker-adjusted history.
+
+`generated/MARKET_MAP_TREND_TERMINATION_2024Q4.md` tests whether current
+strength, volatility, time and microstructure predict continuation versus
+retracement for deduplicated active-movement episodes.
+
+`generated/EURUSD_MARKET_MAP_TRADABILITY_2023_2024.html` compares independent
+full-year maps and visualizes changes in zone quality and strategy fit.
+The standalone `EURUSD_MARKET_MAP_TRADABILITY_2023.html` and
+`EURUSD_MARKET_MAP_TRADABILITY_2024.html` files use the original five-layer
+2025 map renderer.
+
+The Dukascopy EURUSD tick archive now includes complete calendar-year files for
+2023 and 2024. See `docs/DUKASCOPY_TICK_ARCHIVE.md` for paths, checksums,
+coverage, schema, broker-adjusted M5 features and reproduction commands.

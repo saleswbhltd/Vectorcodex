@@ -1,0 +1,20 @@
+{
+  "symbol": "EURUSD",
+  "requested_start": "2023-02-01T00:00:00+00:00",
+  "requested_end_exclusive": "2023-03-01T00:00:00+00:00",
+  "requested_hours": 672,
+  "hour_status": {
+    "ok": 480,
+    "empty": 192
+  },
+  "error_hours": {},
+  "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230201_20230301_exclusive.csv.gz",
+  "rows": 2687210,
+  "start": "2023-02-01T00:00:00.369000+00:00",
+  "end": "2023-02-28T23:59:57.003000+00:00",
+  "duplicate_timestamps": 0,
+  "ask_below_bid": 0,
+  "outside_requested_period": 0,
+  "min_bid": 1.05328,
+  "max_ask": 1.10336
+}

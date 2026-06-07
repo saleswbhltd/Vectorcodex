@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VECTOR80 25 vs 45 Trade Sibling Comparison</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg:#f5f7fa; --panel:#ffffff; --ink:#17202a; --muted:#667085; --line:#d9e1ea;
+  --green:#067647; --green-bg:#e7f8ef; --red:#b42318; --red-bg:#fdecec; --blue:#175cd3; --blue-bg:#eaf1ff;
+  --amber:#9a6700; --amber-bg:#fff6db;
+}
+* { box-sizing:border-box; }
+body { margin:0; font-family:Segoe UI, Arial, sans-serif; background:var(--bg); color:var(--ink); }
+main { max-width:1400px; margin:0 auto; padding:28px; }
+h1 { margin:0 0 8px; font-size:28px; letter-spacing:0; }
+.lead { margin:0 0 22px; color:var(--muted); }
+.summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:20px; }
+.metric { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:14px 16px; }
+.metric label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+.metric strong { font-size:22px; }
+.cluster { background:var(--panel); border:1px solid var(--line); border-radius:8px; margin:14px 0; overflow:hidden; }
+.cluster header { display:flex; justify-content:space-between; gap:18px; padding:16px; border-bottom:1px solid var(--line); align-items:flex-start; }
+h2 { margin:0; font-size:18px; }
+h2 span { color:var(--muted); font-weight:500; }
+p { margin:6px 0 0; color:var(--muted); }
+.totals { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+.totals div { min-width:118px; border:1px solid var(--line); border-radius:8px; padding:8px 10px; background:#fbfcfe; }
+.totals label { display:block; font-size:11px; color:var(--muted); margin-bottom:4px; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th,td { padding:9px 10px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap; }
+th { font-size:12px; color:#475467; background:#f8fafc; }
+tr:last-child td { border-bottom:0; }
+tr.kept { background:#fbfdff; }
+tr.sib { background:#fffdf7; }
+.num { text-align:right; font-variant-numeric:tabular-nums; }
+.pos { color:var(--green); font-weight:650; }
+.neg { color:var(--red); font-weight:650; }
+.zero { color:var(--muted); }
+.pill { display:inline-block; border-radius:999px; padding:3px 8px; font-size:12px; font-weight:650; }
+.pill.kept { color:var(--blue); background:var(--blue-bg); }
+.pill.sib { color:var(--amber); background:var(--amber-bg); }
+.note { background:#fff; border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin:16px 0 22px; color:#344054; }
+@media (max-width:900px) {
+  main { padding:16px; }
+  .summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .cluster header { display:block; }
+  .totals { justify-content:flex-start; margin-top:12px; }
+  table { display:block; overflow-x:auto; }
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>VECTOR80 25 vs 45 Trade Sibling Comparison</h1>
+  <p class="lead">Each cluster shows the trade kept by the 25-signal de-duped run and the sibling trades that existed in the 45-trade stacked run.</p>
+  <div class="summary">
+    <div class="metric"><label>Signal clusters</label><strong>25</strong></div>
+    <div class="metric"><label>45-run trades</label><strong>45</strong></div>
+    <div class="metric"><label>Stacked clusters</label><strong>17</strong></div>
+    <div class="metric"><label>BUY / SELL clusters</label><strong>12 / 13</strong></div>
+    <div class="metric"><label>Kept-trade old profit</label><strong><span class="pos">2,568.87</span></strong></div>
+    <div class="metric"><label>Removed sibling profit</label><strong><span class="pos">2,286.19</span></strong></div>
+    <div class="metric"><label>45-run total profit</label><strong><span class="pos">4,855.06</span></strong></div>
+    <div class="metric"><label>Single-entry clusters</label><strong>8</strong></div>
+  </div>
+  <div class="note">Profit values are from the original 45-trade MT5 report. The 25-trade run kept the first entry in each same side/group cluster and blocked later sibling entries within the cluster window.</div>
+  
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#01 SELL <span>2026.03.31 04:25:00</span></h2>
+            <p>SELL_label_HH_hgb_09</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">100.00</span></div>
+            <div><label>Siblings</label><span class="pos">199.20</span></div>
+            <div><label>45-run total</label><span class="pos">299.20</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.03.31 04:25:00</td>
+            <td>SELL</td>
+            <td>1.14857</td>
+            <td>2026.03.31 04:50:01</td>
+            <td>1.14791</td>
+            <td class="num"><span class="pos">6.6</span></td>
+            <td class="num"><span class="pos">100.00</span></td>
+            <td>tp 1.14791</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.03.31 04:30:00</td>
+            <td>SELL</td>
+            <td>1.14895</td>
+            <td>2026.03.31 04:48:31</td>
+            <td>1.14815</td>
+            <td class="num"><span class="pos">8.0</span></td>
+            <td class="num"><span class="pos">99.20</span></td>
+            <td>tp 1.14815</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.03.31 04:35:00</td>
+            <td>SELL</td>
+            <td>1.14871</td>
+            <td>2026.03.31 04:56:15</td>
+            <td>1.14777</td>
+            <td class="num"><span class="pos">9.4</span></td>
+            <td class="num"><span class="pos">100.00</span></td>
+            <td>tp 1.14777</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#02 SELL <span>2026.04.01 11:45:00</span></h2>
+            <p>SELL_label_trade_context_sessio</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">102.40</span></div>
+            <div><label>Siblings</label><span class="pos">105.78</span></div>
+            <div><label>45-run total</label><span class="pos">208.18</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.01 11:45:00</td>
+            <td>SELL</td>
+            <td>1.16103</td>
+            <td>2026.04.01 11:52:49</td>
+            <td>1.16023</td>
+            <td class="num"><span class="pos">8.0</span></td>
+            <td class="num"><span class="pos">102.40</span></td>
+            <td>tp 1.16023</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.01 11:50:00</td>
+            <td>SELL</td>
+            <td>1.16043</td>
+            <td>2026.04.01 11:55:16</td>
+            <td>1.15961</td>
+            <td class="num"><span class="pos">8.2</span></td>
+            <td class="num"><span class="pos">105.78</span></td>
+            <td>tp 1.15963</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#03 BUY <span>2026.04.02 09:15:00</span></h2>
+            <p>BUY_LL_HGB_088</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">106.59</span></div>
+            <div><label>Siblings</label><span class="pos">105.50</span></div>
+            <div><label>45-run total</label><span class="pos">212.09</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.02 09:15:00</td>
+            <td>BUY</td>
+            <td>1.15176</td>
+            <td>2026.04.02 09:20:24</td>
+            <td>1.15227</td>
+            <td class="num"><span class="pos">5.1</span></td>
+            <td class="num"><span class="pos">106.59</span></td>
+            <td>tp 1.15226</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.02 09:20:00</td>
+            <td>BUY</td>
+            <td>1.15207</td>
+            <td>2026.04.02 09:27:28</td>
+            <td>1.15257</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">105.50</span></td>
+            <td>tp 1.15257</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#04 SELL <span>2026.04.07 12:00:00</span></h2>
+            <p>SELL_label_trade_context_sessio</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">106.40</span></div>
+            <div><label>Siblings</label><span class="zero">0.00</span></div>
+            <div><label>45-run total</label><span class="pos">106.40</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.07 12:00:00</td>
+            <td>SELL</td>
+            <td>1.15734</td>
+            <td>2026.04.07 12:45:30</td>
+            <td>1.15654</td>
+            <td class="num"><span class="pos">8.0</span></td>
+            <td class="num"><span class="pos">106.40</span></td>
+            <td>tp 1.15654</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#05 BUY <span>2026.04.07 20:15:01</span></h2>
+            <p>BUY_HL_HGB_090</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">109.65</span></div>
+            <div><label>Siblings</label><span class="pos">214.00</span></div>
+            <div><label>45-run total</label><span class="pos">323.65</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.07 20:15:01</td>
+            <td>BUY</td>
+            <td>1.15704</td>
+            <td>2026.04.07 20:35:37</td>
+            <td>1.15755</td>
+            <td class="num"><span class="pos">5.1</span></td>
+            <td class="num"><span class="pos">109.65</span></td>
+            <td>tp 1.15754</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.07 20:20:00</td>
+            <td>BUY</td>
+            <td>1.15681</td>
+            <td>2026.04.07 20:34:29</td>
+            <td>1.15731</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">107.00</span></td>
+            <td>tp 1.15731</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.07 20:25:00</td>
+            <td>BUY</td>
+            <td>1.15686</td>
+            <td>2026.04.07 20:35:04</td>
+            <td>1.15736</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">107.00</span></td>
+            <td>tp 1.15736</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#06 SELL <span>2026.04.09 11:55:00</span></h2>
+            <p>SELL_label_trade_context_sessio</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="neg">-9.66</span></div>
+            <div><label>Siblings</label><span class="zero">0.00</span></div>
+            <div><label>45-run total</label><span class="neg">-9.66</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.09 11:55:00</td>
+            <td>SELL</td>
+            <td>1.16744</td>
+            <td>2026.04.09 13:55:01</td>
+            <td>1.16751</td>
+            <td class="num"><span class="neg">-0.7</span></td>
+            <td class="num"><span class="neg">-9.66</span></td>
+            <td></td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#07 SELL <span>2026.04.13 10:40:00</span></h2>
+            <p>SELL_label_session_vol_HH_LONDO</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">110.40</span></div>
+            <div><label>Siblings</label><span class="zero">0.00</span></div>
+            <div><label>45-run total</label><span class="pos">110.40</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.13 10:40:00</td>
+            <td>SELL</td>
+            <td>1.16977</td>
+            <td>2026.04.13 11:39:13</td>
+            <td>1.16897</td>
+            <td class="num"><span class="pos">8.0</span></td>
+            <td class="num"><span class="pos">110.40</span></td>
+            <td>tp 1.16897</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#08 SELL <span>2026.04.14 10:05:00</span></h2>
+            <p>SELL_label_trade_context_sessio</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="neg">-112.00</span></div>
+            <div><label>Siblings</label><span class="pos">110.40</span></div>
+            <div><label>45-run total</label><span class="neg">-1.60</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.14 10:05:00</td>
+            <td>SELL</td>
+            <td>1.17889</td>
+            <td>2026.04.14 10:07:35</td>
+            <td>1.17969</td>
+            <td class="num"><span class="neg">-8.0</span></td>
+            <td class="num"><span class="neg">-112.00</span></td>
+            <td>sl 1.17969</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.14 10:10:00</td>
+            <td>SELL</td>
+            <td>1.17931</td>
+            <td>2026.04.14 10:12:40</td>
+            <td>1.17851</td>
+            <td class="num"><span class="pos">8.0</span></td>
+            <td class="num"><span class="pos">110.40</span></td>
+            <td>tp 1.17851</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#09 SELL <span>2026.04.15 02:35:00</span></h2>
+            <p>SELL_label_HH_hgb_09</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">111.20</span></div>
+            <div><label>Siblings</label><span class="pos">113.40</span></div>
+            <div><label>45-run total</label><span class="pos">224.60</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.15 02:35:00</td>
+            <td>SELL</td>
+            <td>1.18002</td>
+            <td>2026.04.15 03:04:11</td>
+            <td>1.17922</td>
+            <td class="num"><span class="pos">8.0</span></td>
+            <td class="num"><span class="pos">111.20</span></td>
+            <td>tp 1.17922</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.15 02:40:00</td>
+            <td>SELL</td>
+            <td>1.17978</td>
+            <td>2026.04.15 03:42:31</td>
+            <td>1.17897</td>
+            <td class="num"><span class="pos">8.1</span></td>
+            <td class="num"><span class="pos">113.40</span></td>
+            <td>tp 1.17898</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#10 SELL <span>2026.04.16 06:05:00</span></h2>
+            <p>SELL_label_HH_hgb_09</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">115.02</span></div>
+            <div><label>Siblings</label><span class="pos">115.02</span></div>
+            <div><label>45-run total</label><span class="pos">230.04</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.16 06:05:00</td>
+            <td>SELL</td>
+            <td>1.18201</td>
+            <td>2026.04.16 06:42:37</td>
+            <td>1.18125</td>
+            <td class="num"><span class="pos">7.6</span></td>
+            <td class="num"><span class="pos">115.02</span></td>
+            <td>tp 1.18126</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.16 06:10:00</td>
+            <td>SELL</td>
+            <td>1.18206</td>
+            <td>2026.04.16 07:02:25</td>
+            <td>1.18120</td>
+            <td class="num"><span class="pos">8.6</span></td>
+            <td class="num"><span class="pos">115.02</span></td>
+            <td>tp 1.18121</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#11 SELL <span>2026.04.20 10:15:00</span></h2>
+            <p>SELL_label_session_vol_HH_LONDO</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">116.00</span></div>
+            <div><label>Siblings</label><span class="pos">231.20</span></div>
+            <div><label>45-run total</label><span class="pos">347.20</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.20 10:15:00</td>
+            <td>SELL</td>
+            <td>1.17671</td>
+            <td>2026.04.20 10:45:26</td>
+            <td>1.17591</td>
+            <td class="num"><span class="pos">8.0</span></td>
+            <td class="num"><span class="pos">116.00</span></td>
+            <td>tp 1.17591</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.20 10:20:04</td>
+            <td>SELL</td>
+            <td>1.17670</td>
+            <td>2026.04.20 10:45:26</td>
+            <td>1.17590</td>
+            <td class="num"><span class="pos">8.0</span></td>
+            <td class="num"><span class="pos">116.00</span></td>
+            <td>tp 1.17590</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.20 10:25:00</td>
+            <td>SELL</td>
+            <td>1.17699</td>
+            <td>2026.04.20 10:30:35</td>
+            <td>1.17619</td>
+            <td class="num"><span class="pos">8.0</span></td>
+            <td class="num"><span class="pos">115.20</span></td>
+            <td>tp 1.17619</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#12 BUY <span>2026.04.21 20:20:00</span></h2>
+            <p>BUY_LL_HGB_088</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">121.89</span></div>
+            <div><label>Siblings</label><span class="pos">120.00</span></div>
+            <div><label>45-run total</label><span class="pos">241.89</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.21 20:20:00</td>
+            <td>BUY</td>
+            <td>1.17230</td>
+            <td>2026.04.21 20:25:12</td>
+            <td>1.17281</td>
+            <td class="num"><span class="pos">5.1</span></td>
+            <td class="num"><span class="pos">121.89</span></td>
+            <td>tp 1.17280</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.21 20:25:00</td>
+            <td>BUY</td>
+            <td>1.17258</td>
+            <td>2026.04.21 20:29:22</td>
+            <td>1.17308</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">120.00</span></td>
+            <td>tp 1.17308</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#13 BUY <span>2026.04.23 20:20:00</span></h2>
+            <p>BUY_LL_HGB_088</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">122.00</span></div>
+            <div><label>Siblings</label><span class="pos">122.00</span></div>
+            <div><label>45-run total</label><span class="pos">244.00</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.23 20:20:00</td>
+            <td>BUY</td>
+            <td>1.16800</td>
+            <td>2026.04.23 20:26:19</td>
+            <td>1.16850</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">122.00</span></td>
+            <td>tp 1.16850</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.23 20:25:00</td>
+            <td>BUY</td>
+            <td>1.16808</td>
+            <td>2026.04.23 20:26:19</td>
+            <td>1.16858</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">122.00</span></td>
+            <td>tp 1.16858</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#14 SELL <span>2026.04.24 11:20:00</span></h2>
+            <p>SELL_label_session_vol_HH_LONDO</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">124.00</span></div>
+            <div><label>Siblings</label><span class="zero">0.00</span></div>
+            <div><label>45-run total</label><span class="pos">124.00</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.24 11:20:00</td>
+            <td>SELL</td>
+            <td>1.16940</td>
+            <td>2026.04.24 12:21:26</td>
+            <td>1.16860</td>
+            <td class="num"><span class="pos">8.0</span></td>
+            <td class="num"><span class="pos">124.00</span></td>
+            <td>tp 1.16860</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#15 BUY <span>2026.04.24 18:40:00</span></h2>
+            <p>BUY_HL_HGB_090</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">125.50</span></div>
+            <div><label>Siblings</label><span class="zero">0.00</span></div>
+            <div><label>45-run total</label><span class="pos">125.50</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.24 18:40:00</td>
+            <td>BUY</td>
+            <td>1.17045</td>
+            <td>2026.04.24 18:44:41</td>
+            <td>1.17095</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">125.50</span></td>
+            <td>tp 1.17095</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#16 BUY <span>2026.04.27 13:15:00</span></h2>
+            <p>BUY_HL_HGB_090</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">126.50</span></div>
+            <div><label>Siblings</label><span class="pos">129.03</span></div>
+            <div><label>45-run total</label><span class="pos">255.53</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.27 13:15:00</td>
+            <td>BUY</td>
+            <td>1.17407</td>
+            <td>2026.04.27 13:48:56</td>
+            <td>1.17457</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">126.50</span></td>
+            <td>tp 1.17457</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.27 13:20:04</td>
+            <td>BUY</td>
+            <td>1.17408</td>
+            <td>2026.04.27 13:51:40</td>
+            <td>1.17459</td>
+            <td class="num"><span class="pos">5.1</span></td>
+            <td class="num"><span class="pos">129.03</span></td>
+            <td>tp 1.17458</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#17 BUY <span>2026.04.28 10:00:00</span></h2>
+            <p>BUY_LL_HIGHVOL_RF_085</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">129.00</span></div>
+            <div><label>Siblings</label><span class="pos">129.50</span></div>
+            <div><label>45-run total</label><span class="pos">258.50</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.28 10:00:00</td>
+            <td>BUY</td>
+            <td>1.16877</td>
+            <td>2026.04.28 10:11:06</td>
+            <td>1.16927</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">129.00</span></td>
+            <td>tp 1.16927</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.28 10:05:00</td>
+            <td>BUY</td>
+            <td>1.16893</td>
+            <td>2026.04.28 10:12:04</td>
+            <td>1.16943</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">129.50</span></td>
+            <td>tp 1.16943</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#18 BUY <span>2026.04.28 15:15:00</span></h2>
+            <p>BUY_LL_HGB_088</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">134.13</span></div>
+            <div><label>Siblings</label><span class="zero">0.00</span></div>
+            <div><label>45-run total</label><span class="pos">134.13</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.28 15:15:00</td>
+            <td>BUY</td>
+            <td>1.16831</td>
+            <td>2026.04.28 15:20:19</td>
+            <td>1.16882</td>
+            <td class="num"><span class="pos">5.1</span></td>
+            <td class="num"><span class="pos">134.13</span></td>
+            <td>tp 1.16881</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#19 SELL <span>2026.04.29 14:00:00</span></h2>
+            <p>SELL_label_HH_hgb_09</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">132.80</span></div>
+            <div><label>Siblings</label><span class="zero">0.00</span></div>
+            <div><label>45-run total</label><span class="pos">132.80</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.29 14:00:00</td>
+            <td>SELL</td>
+            <td>1.17094</td>
+            <td>2026.04.29 14:56:18</td>
+            <td>1.17014</td>
+            <td class="num"><span class="pos">8.0</span></td>
+            <td class="num"><span class="pos">132.80</span></td>
+            <td>tp 1.17014</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#20 BUY <span>2026.04.30 07:35:01</span></h2>
+            <p>BUY_LL_HGB_088</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">134.00</span></div>
+            <div><label>Siblings</label><span class="pos">134.50</span></div>
+            <div><label>45-run total</label><span class="pos">268.50</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.04.30 07:35:01</td>
+            <td>BUY</td>
+            <td>1.16566</td>
+            <td>2026.04.30 08:00:44</td>
+            <td>1.16616</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">134.00</span></td>
+            <td>tp 1.16616</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.04.30 07:45:00</td>
+            <td>BUY</td>
+            <td>1.16586</td>
+            <td>2026.04.30 08:08:03</td>
+            <td>1.16636</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">134.50</span></td>
+            <td>tp 1.16636</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#21 BUY <span>2026.05.07 16:55:00</span></h2>
+            <p>BUY_HL_HGB_090</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">139.23</span></div>
+            <div><label>Siblings</label><span class="pos">136.00</span></div>
+            <div><label>45-run total</label><span class="pos">275.23</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.05.07 16:55:00</td>
+            <td>BUY</td>
+            <td>1.17675</td>
+            <td>2026.05.07 17:20:52</td>
+            <td>1.17726</td>
+            <td class="num"><span class="pos">5.1</span></td>
+            <td class="num"><span class="pos">139.23</span></td>
+            <td>tp 1.17725</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.05.07 17:05:00</td>
+            <td>BUY</td>
+            <td>1.17660</td>
+            <td>2026.05.07 17:20:24</td>
+            <td>1.17710</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">136.00</span></td>
+            <td>tp 1.17710</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#22 SELL <span>2026.05.08 09:05:00</span></h2>
+            <p>SELL_label_HH_hgb_09</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="neg">-5.22</span></div>
+            <div><label>Siblings</label><span class="pos">36.33</span></div>
+            <div><label>45-run total</label><span class="pos">31.11</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.05.08 09:05:00</td>
+            <td>SELL</td>
+            <td>1.17441</td>
+            <td>2026.05.08 11:05:02</td>
+            <td>1.17444</td>
+            <td class="num"><span class="neg">-0.3</span></td>
+            <td class="num"><span class="neg">-5.22</span></td>
+            <td></td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.05.08 09:10:00</td>
+            <td>SELL</td>
+            <td>1.17459</td>
+            <td>2026.05.08 11:10:02</td>
+            <td>1.17438</td>
+            <td class="num"><span class="pos">2.1</span></td>
+            <td class="num"><span class="pos">36.33</span></td>
+            <td></td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#23 SELL <span>2026.05.15 13:55:00</span></h2>
+            <p>SELL_label_trade_context_HH_BEA</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">139.20</span></div>
+            <div><label>Siblings</label><span class="pos">140.00</span></div>
+            <div><label>45-run total</label><span class="pos">279.20</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.05.15 13:55:00</td>
+            <td>SELL</td>
+            <td>1.16539</td>
+            <td>2026.05.15 14:02:24</td>
+            <td>1.16459</td>
+            <td class="num"><span class="pos">8.0</span></td>
+            <td class="num"><span class="pos">139.20</span></td>
+            <td>tp 1.16459</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.05.15 14:00:00</td>
+            <td>SELL</td>
+            <td>1.16492</td>
+            <td>2026.05.15 14:04:12</td>
+            <td>1.16412</td>
+            <td class="num"><span class="pos">8.0</span></td>
+            <td class="num"><span class="pos">140.00</span></td>
+            <td>tp 1.16412</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#24 BUY <span>2026.05.19 16:30:00</span></h2>
+            <p>BUY_LL_HIGHVOL_RF_085</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">144.84</span></div>
+            <div><label>Siblings</label><span class="pos">144.33</span></div>
+            <div><label>45-run total</label><span class="pos">289.17</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.05.19 16:30:00</td>
+            <td>BUY</td>
+            <td>1.16059</td>
+            <td>2026.05.19 16:49:04</td>
+            <td>1.16110</td>
+            <td class="num"><span class="pos">5.1</span></td>
+            <td class="num"><span class="pos">144.84</span></td>
+            <td>tp 1.16109</td>
+          </tr>
+          <tr class="sib">
+            <td><span class="pill sib">45-run sibling</span></td>
+            <td>2026.05.19 16:35:00</td>
+            <td>BUY</td>
+            <td>1.16044</td>
+            <td>2026.05.19 16:44:02</td>
+            <td>1.16095</td>
+            <td class="num"><span class="pos">5.1</span></td>
+            <td class="num"><span class="pos">144.33</span></td>
+            <td>tp 1.16094</td>
+          </tr></tbody>
+        </table>
+      </section>
+      <section class="cluster">
+        <header>
+          <div>
+            <h2>#25 BUY <span>2026.05.21 16:40:00</span></h2>
+            <p>BUY_LL_HGB_088</p>
+          </div>
+          <div class="totals">
+            <div><label>Kept</label><span class="pos">145.00</span></div>
+            <div><label>Siblings</label><span class="zero">0.00</span></div>
+            <div><label>45-run total</label><span class="pos">145.00</span></div>
+          </div>
+        </header>
+        <table>
+          <thead><tr><th>Role</th><th>Entry</th><th>Side</th><th>Entry Price</th><th>Exit</th><th>Exit Price</th><th>Pips</th><th>Profit</th><th>Exit Note</th></tr></thead>
+          <tbody>
+          <tr class="kept">
+            <td><span class="pill kept">Kept in 25</span></td>
+            <td>2026.05.21 16:40:00</td>
+            <td>BUY</td>
+            <td>1.15810</td>
+            <td>2026.05.21 16:51:59</td>
+            <td>1.15860</td>
+            <td class="num"><span class="pos">5.0</span></td>
+            <td class="num"><span class="pos">145.00</span></td>
+            <td>tp 1.15860</td>
+          </tr></tbody>
+        </table>
+      </section>
+</main>
+</body>
+</html>

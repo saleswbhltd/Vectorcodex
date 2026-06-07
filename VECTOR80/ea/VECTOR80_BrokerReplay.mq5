@@ -23,6 +23,8 @@
 #property description "VECTOR80 ZZLines model-backed pivot EA prototype"
 
 #include <Trade/Trade.mqh>
+#include <MARKET_MAP/MarketMap.mqh>
+#include <VECTOR_TIME/VectorTime.mqh>
 
 //──────────────────────────────────────────────────────────────────
 // Inputs
@@ -37,8 +39,7 @@ enum ENUM_VECTOR80_SCORE_MODE
 input group "=== Model / Signal ==="
 input ENUM_VECTOR80_SCORE_MODE InpScoreMode       = SCORE_EXTERNAL_CSV;
 input string  InpScoreFileCommon                  = "VECTOR80_model_scores.csv";
-input int     InpScoreTimeShiftMin                = 180;     // broker time = research score time + this shift
-input int     InpScoreTimeToleranceMin            = 5;       // small tolerance after fixed shift
+input int     InpScoreTimeToleranceMin            = 5;
 input bool    InpDebugShiftSweep                  = true;
 input int     InpDebugShiftSweepFromMin           = -360;
 input int     InpDebugShiftSweepToMin             = 360;
@@ -52,7 +53,18 @@ input int     InpEntryWindowBars                  = 2;       // pivot bar + this
 input group "=== Demo Exploration ==="
 input bool    InpDemoExploreMode                  = false;   // DEMO ONLY: lower thresholds for faster trade/log loop
 input double  InpDemoExploreMinScore              = 0.55;    // DEMO ONLY: effective threshold cap
-input bool    InpDemoExploreFallbackHeuristic     = true;    // DEMO ONLY: heuristic score if CSV score missing
+input bool    InpDemoExploreFallbackHeuristic     = false;   // DEMO ONLY: heuristic score if CSV score missing
+
+input group "=== Adaptive UTC Threshold Rule ==="
+input bool    InpAdaptiveTimeRuleEnabled          = true;
+input bool    InpAdaptiveAllowEntries             = true;    // disable rule trades without disabling research logging
+input int     InpAdaptiveStartUtcMinutes          = 0;       // 00:00 UTC
+input int     InpAdaptiveEndUtcMinutes            = 120;     // 02:00 UTC, end exclusive
+input double  InpAdaptiveThresholdDelta           = 0.08;
+input double  InpAdaptiveMinScore                 = 0.70;
+input bool    InpAdaptiveShadowOutcomes           = true;
+input double  InpAdaptiveResearchMaxDelta         = 0.15;    // log near-threshold candidates all day
+input string  InpAdaptiveLogFile                  = "VECTOR80_adaptive_thresholds.csv";
 
 input group "=== ZigZag Lines MTF ==="
 input string          InpZZIndicatorName          = "Market\\ZigZag Lines MTF for MT5";
@@ -87,11 +99,32 @@ input double  InpHeuristicLLThreshold             = 0.88;
 input double  InpHeuristicHLThreshold             = 0.90;
 input double  InpHeuristicHHThreshold             = 0.90;
 
+input group "=== Live Python Bridge ==="
+input bool    InpRequireLiveBridge                 = true;
+input bool    InpExportLiveTicks                   = true;
+input string  InpBridgeHeartbeatFile               = "VECTOR80_bridge_heartbeat.csv";
+input string  InpMt5HeartbeatFile                  = "VECTOR80_mt5_heartbeat.csv";
+input string  InpScoreRequestFile                  = "VECTOR80_score_requests.csv";
+input int     InpBridgeMaxAgeSec                   = 15;
+input int     InpScoreWaitSec                      = 30;
+input int     InpBridgeAlertCooldownSec            = 900;
+input bool    InpBridgePushNotifications           = true;
+
 input group "=== Logging ==="
 input bool    InpUseCommonFiles                   = true;
 input string  InpEventLogFile                     = "VECTOR80_events.csv";
 input string  InpTradeLogFile                     = "VECTOR80_trades.csv";
 input bool    InpDebugLogging                     = true;
+
+input group "=== Time HUD ==="
+input bool    InpTimeHudEnabled                   = true;
+input ENUM_BASE_CORNER InpTimeHudCorner           = CORNER_LEFT_UPPER;
+input int     InpTimeHudX                         = 10;
+input int     InpTimeHudY                         = 20;
+input int     InpTimeHudFontSize                  = 9;
+input color   InpTimeHudColor                     = clrWhite;
+input color   InpTimeHudOpenColor                 = clrLime;
+input color   InpTimeHudClosedColor               = clrGray;
 
 //──────────────────────────────────────────────────────────────────
 // Constants / globals
@@ -135,6 +168,10 @@ struct SSignal
    double   stop_pips;
    double   target_r;
    int      timeout_min;
+   double   validated_threshold;
+   double   effective_threshold;
+   bool     adaptive_rule;
+   datetime utc_time;
 };
 
 struct SManagedPosition
@@ -150,6 +187,10 @@ struct SManagedPosition
    double   tp;
    double   lots;
    int      timeout_min;
+   bool     adaptive_rule;
+   double   score;
+   double   validated_threshold;
+   double   effective_threshold;
 };
 
 struct SPendingSignal
@@ -160,10 +201,42 @@ struct SPendingSignal
    double   trigger_price;
 };
 
+struct SShadowCandidate
+{
+   bool     active;
+   string   candidate_id;
+   datetime entry_time;
+   datetime utc_time;
+   datetime pivot_time;
+   string   engine_id;
+   string   side;
+   double   score;
+   double   validated_threshold;
+   double   rule_threshold;
+   double   entry_price;
+   double   stop_price;
+   double   target_price;
+   datetime expiry_time;
+   bool     in_rule_window;
+   string   market_direction;
+   string   market_structure;
+   string   market_volatility;
+   string   market_transition;
+   double   market_confidence;
+   double   market_strength;
+   double   market_liquidity;
+   double   market_exhaustion;
+};
+
 CTrade g_trade;
+CMarketMap g_market_map;
+MarketMapState g_market_state;
+bool g_market_state_ready = false;
+CVectorTime g_vector_time;
 SEngine g_engines[ENGINE_COUNT];
 SManagedPosition g_positions[32];
 SPendingSignal g_pending_signals[32];
+SShadowCandidate g_shadow_candidates[128];
 
 double   g_pip = 0.0001;
 int      g_zz_handle = INVALID_HANDLE;
@@ -177,6 +250,16 @@ int      g_last_cluster_count = 0;
 
 int g_event_handle = INVALID_HANDLE;
 int g_trade_handle = INVALID_HANDLE;
+int g_live_tick_handle = INVALID_HANDLE;
+int g_score_request_handle = INVALID_HANDLE;
+int g_adaptive_handle = INVALID_HANDLE;
+string g_live_tick_file = "";
+datetime g_last_bridge_alert = 0;
+datetime g_last_time_alert = 0;
+bool g_pending_pivot_active = false;
+SPivot g_pending_pivot;
+datetime g_pending_score_bar = 0;
+datetime g_pending_score_deadline = 0;
 
 long g_dbg_bars = 0;
 long g_dbg_latest_pivots = 0;
@@ -192,6 +275,10 @@ long g_dbg_trades_opened = 0;
 long g_dbg_retest_queued = 0;
 long g_dbg_retest_filled = 0;
 long g_dbg_retest_expired = 0;
+long g_dbg_adaptive_signals = 0;
+long g_dbg_shadow_candidates = 0;
+long g_dbg_shadow_wins = 0;
+long g_dbg_shadow_losses = 0;
 int  g_dbg_min_pivot_shift = 999999;
 int  g_dbg_max_pivot_shift = -1;
 
@@ -221,6 +308,102 @@ string TS(datetime t)
    return TimeToString(t, TIME_DATE | TIME_SECONDS);
 }
 
+int NormalizeDayMinute(int value)
+{
+   int result = value % 1440;
+   if(result < 0)
+      result += 1440;
+   return result;
+}
+
+datetime AdaptiveUtcTime(datetime broker_time)
+{
+   if(MQLInfoInteger(MQL_TESTER))
+      return MMBrokerToUtc(broker_time);
+   if(g_vector_time.Ready())
+      return g_vector_time.BrokerToUtc(broker_time);
+   return MMBrokerToUtc(broker_time);
+}
+
+int UtcMinuteOfDay(datetime broker_time)
+{
+   MqlDateTime utc;
+   TimeToStruct(AdaptiveUtcTime(broker_time), utc);
+   return utc.hour * 60 + utc.min;
+}
+
+bool InAdaptiveTimeWindow(datetime broker_time)
+{
+   if(!InpAdaptiveTimeRuleEnabled)
+      return false;
+   int start = NormalizeDayMinute(InpAdaptiveStartUtcMinutes);
+   int end = NormalizeDayMinute(InpAdaptiveEndUtcMinutes);
+   int now = UtcMinuteOfDay(broker_time);
+   if(start == end)
+      return true;
+   if(start < end)
+      return now >= start && now < end;
+   return now >= start || now < end;
+}
+
+double AdaptiveThreshold(double validated_threshold, datetime broker_time)
+{
+   if(!InAdaptiveTimeWindow(broker_time))
+      return validated_threshold;
+   double lowered = validated_threshold - MathMax(0.0, InpAdaptiveThresholdDelta);
+   return MathMax(InpAdaptiveMinScore, lowered);
+}
+
+string UtcSlot(datetime broker_time)
+{
+   MqlDateTime utc;
+   TimeToStruct(AdaptiveUtcTime(broker_time), utc);
+   int minute = (utc.min / 15) * 15;
+   return StringFormat("%02d:%02d", utc.hour, minute);
+}
+
+int ScoreTimeShiftMinutes(datetime broker_time)
+{
+   if(MQLInfoInteger(MQL_TESTER))
+      return MMBrokerUtcOffsetHours(broker_time) * 60;
+   if(g_vector_time.Healthy())
+      return g_vector_time.BrokerUtcOffsetSeconds() / 60;
+   return 0;
+}
+
+bool TimeHealthy(string &reason)
+{
+   reason = "";
+   if(MQLInfoInteger(MQL_TESTER))
+      return true;
+   if(g_vector_time.Healthy())
+      return true;
+   reason = g_vector_time.HealthReason();
+   if(reason == "")
+      reason = "automatic broker/UTC synchronization unavailable";
+   return false;
+}
+
+void TimeHealthAlert(string reason)
+{
+   datetime now = TimeLocal();
+   if(g_last_time_alert > 0 && now - g_last_time_alert < 900)
+      return;
+   g_last_time_alert = now;
+   string message = "VECTOR80 TIME ERROR: " + reason +
+                    "; new entries blocked. Check the EA.";
+   Alert(message);
+   Print(message);
+   SendNotification(message);
+}
+
+string DateTag(datetime t)
+{
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return StringFormat("%04d%02d%02d", dt.year, dt.mon, dt.day);
+}
+
 bool IsNewBar()
 {
    datetime t[1];
@@ -247,7 +430,7 @@ double NormalizePrice(double p)
 string SessionOf(datetime t)
 {
    MqlDateTime dt;
-   TimeToStruct(t, dt);
+   TimeToStruct(AdaptiveUtcTime(t), dt);
    int h = dt.hour;
    if(h >= 22 || h < 7) return "ASIAN";
    if(h >= 7 && h < 12) return "LONDON";
@@ -346,6 +529,7 @@ void OpenLogs()
 {
    bool new_events = !FileIsExist(InpEventLogFile, InpUseCommonFiles ? FILE_COMMON : 0);
    bool new_trades = !FileIsExist(InpTradeLogFile, InpUseCommonFiles ? FILE_COMMON : 0);
+   bool new_adaptive = !FileIsExist(InpAdaptiveLogFile, InpUseCommonFiles ? FILE_COMMON : 0);
    g_event_handle = FileOpen(InpEventLogFile, FileFlags(), ',');
    if(g_event_handle != INVALID_HANDLE)
    {
@@ -367,12 +551,59 @@ void OpenLogs()
       }
       else FileSeek(g_trade_handle, 0, SEEK_END);
    }
+
+   g_adaptive_handle = FileOpen(InpAdaptiveLogFile, FileFlags(), ',');
+   if(g_adaptive_handle != INVALID_HANDLE)
+   {
+      if(new_adaptive)
+      {
+         FileWrite(g_adaptive_handle,
+                   "event_time", "event", "candidate_id", "broker_time", "utc_time",
+                   "utc_slot", "engine_id", "side", "pivot_time", "score",
+                   "validated_threshold", "rule_threshold", "score_gap",
+                   "in_rule_window", "adaptive_entries_enabled", "entry_price",
+                   "stop_price", "target_price", "outcome", "outcome_pips",
+                   "market_direction", "market_structure", "market_volatility",
+                   "market_transition", "market_confidence", "market_strength",
+                   "market_liquidity", "market_exhaustion", "note");
+      }
+      else FileSeek(g_adaptive_handle, 0, SEEK_END);
+   }
 }
 
 void CloseLogs()
 {
    if(g_event_handle != INVALID_HANDLE) { FileClose(g_event_handle); g_event_handle = INVALID_HANDLE; }
    if(g_trade_handle != INVALID_HANDLE) { FileClose(g_trade_handle); g_trade_handle = INVALID_HANDLE; }
+   if(g_adaptive_handle != INVALID_HANDLE) { FileClose(g_adaptive_handle); g_adaptive_handle = INVALID_HANDLE; }
+}
+
+void LogAdaptive(const SShadowCandidate &candidate, string event_type,
+                 string outcome, double outcome_pips, string note)
+{
+   if(g_adaptive_handle == INVALID_HANDLE)
+      return;
+   FileWrite(g_adaptive_handle,
+             TS(TimeCurrent()), event_type, candidate.candidate_id,
+             TS(candidate.entry_time), TS(candidate.utc_time),
+             UtcSlot(candidate.entry_time), candidate.engine_id, candidate.side,
+             TS(candidate.pivot_time), DoubleToString(candidate.score, 6),
+             DoubleToString(candidate.validated_threshold, 3),
+             DoubleToString(candidate.rule_threshold, 3),
+             DoubleToString(candidate.validated_threshold - candidate.score, 6),
+             candidate.in_rule_window ? 1 : 0,
+             InpAdaptiveAllowEntries ? 1 : 0,
+             DoubleToString(candidate.entry_price, _Digits),
+             DoubleToString(candidate.stop_price, _Digits),
+             DoubleToString(candidate.target_price, _Digits),
+             outcome, DoubleToString(outcome_pips, 2),
+             candidate.market_direction, candidate.market_structure,
+             candidate.market_volatility, candidate.market_transition,
+             DoubleToString(candidate.market_confidence, 2),
+             DoubleToString(candidate.market_strength, 2),
+             DoubleToString(candidate.market_liquidity, 2),
+             DoubleToString(candidate.market_exhaustion, 2), note);
+   FileFlush(g_adaptive_handle);
 }
 
 void LogEvent(string event_type, const SSignal &sig, double threshold, string note)
@@ -464,6 +695,197 @@ void LogTrade(string event_type, ulong ticket, string engine_id, string side, do
    FileFlush(g_trade_handle);
 }
 
+void BridgeAlert(string message)
+{
+   datetime now = TimeLocal();
+   if(g_last_bridge_alert > 0 &&
+      now - g_last_bridge_alert < MathMax(1, InpBridgeAlertCooldownSec))
+      return;
+   g_last_bridge_alert = now;
+   string full = "VECTOR80 BRIDGE: " + message;
+   Alert(full);
+   Print(full);
+   if(InpBridgePushNotifications)
+      SendNotification(full);
+}
+
+void WriteMt5Heartbeat()
+{
+   int h = FileOpen(InpMt5HeartbeatFile,
+                    FILE_WRITE | FILE_CSV | FILE_ANSI | FILE_COMMON | FILE_SHARE_READ,
+                    ',');
+   if(h == INVALID_HANDLE)
+      return;
+   FileWrite(h, "epoch", "status", "account", "symbol", "timeframe", "trading");
+   FileWrite(h, IntegerToString((long)TimeGMT()), "RUNNING",
+             IntegerToString((long)AccountInfoInteger(ACCOUNT_LOGIN)),
+             _Symbol, EnumToString(InpSignalTF),
+             (InpAllowTrading ? "true" : "false"));
+   FileClose(h);
+}
+
+bool BridgeHealthy(string &reason)
+{
+   reason = "";
+   if(!InpRequireLiveBridge)
+      return true;
+
+   int h = FileOpen(InpBridgeHeartbeatFile,
+                    FILE_READ | FILE_CSV | FILE_ANSI | FILE_COMMON | FILE_SHARE_WRITE,
+                    ',');
+   if(h == INVALID_HANDLE)
+   {
+      reason = "heartbeat file missing";
+      return false;
+   }
+
+   long epoch = 0;
+   string status = "";
+   string detail = "";
+   while(!FileIsEnding(h))
+   {
+      string c_epoch = FileReadString(h);
+      string c_status = FileReadString(h);
+      FileReadString(h); // pid
+      FileReadString(h); // last_scored_bar
+      FileReadString(h); // score_rows
+      string c_detail = FileReadString(h);
+      if(c_epoch == "epoch" || c_epoch == "")
+         continue;
+      epoch = StringToInteger(c_epoch);
+      status = c_status;
+      detail = c_detail;
+   }
+   FileClose(h);
+
+   if(epoch <= 0)
+   {
+      reason = "invalid heartbeat";
+      return false;
+   }
+   long age = (long)TimeGMT() - epoch;
+   if(age < 0)
+      age = -age;
+   if(age > MathMax(1, InpBridgeMaxAgeSec))
+   {
+      reason = StringFormat("heartbeat stale age=%d sec", (int)age);
+      return false;
+   }
+   if(status != "RUNNING")
+   {
+      reason = "status=" + status + " detail=" + detail;
+      return false;
+   }
+   return true;
+}
+
+void EnsureLiveTickFile()
+{
+   if(!InpExportLiveTicks)
+      return;
+   string wanted = StringFormat("VECTOR80_LIVE_TICKS_%s_%s.csv",
+                                _Symbol, DateTag(TimeCurrent()));
+   if(g_live_tick_handle != INVALID_HANDLE && wanted == g_live_tick_file)
+      return;
+   if(g_live_tick_handle != INVALID_HANDLE)
+      FileClose(g_live_tick_handle);
+
+   bool is_new = !FileIsExist(wanted, FILE_COMMON);
+   g_live_tick_handle = FileOpen(
+      wanted,
+      FILE_READ | FILE_WRITE | FILE_CSV | FILE_ANSI | FILE_COMMON |
+      FILE_SHARE_READ | FILE_SHARE_WRITE,
+      ','
+   );
+   if(g_live_tick_handle == INVALID_HANDLE)
+   {
+      BridgeAlert("cannot open live tick file err=" + IntegerToString(GetLastError()));
+      return;
+   }
+   g_live_tick_file = wanted;
+   FileSeek(g_live_tick_handle, 0, SEEK_END);
+   if(is_new)
+      FileWrite(g_live_tick_handle, "datetime", "time_msc", "bid", "ask",
+                "last", "volume", "flags", "mid");
+}
+
+void WriteLiveTick()
+{
+   if(!InpExportLiveTicks)
+      return;
+   EnsureLiveTickFile();
+   if(g_live_tick_handle == INVALID_HANDLE)
+      return;
+
+   MqlTick tick;
+   if(!SymbolInfoTick(_Symbol, tick))
+      return;
+   double mid = 0.0;
+   if(tick.bid > 0.0 && tick.ask > 0.0)
+      mid = (tick.bid + tick.ask) * 0.5;
+   else if(tick.last > 0.0)
+      mid = tick.last;
+   FileWrite(g_live_tick_handle,
+             TimeToString(tick.time, TIME_DATE | TIME_SECONDS),
+             IntegerToString((long)tick.time_msc),
+             DoubleToString(tick.bid, _Digits),
+             DoubleToString(tick.ask, _Digits),
+             DoubleToString(tick.last, _Digits),
+             DoubleToString(tick.volume_real, 2),
+             IntegerToString((long)tick.flags),
+             DoubleToString(mid, _Digits));
+}
+
+bool OpenScoreRequests()
+{
+   bool is_new = !FileIsExist(InpScoreRequestFile, FILE_COMMON);
+   g_score_request_handle = FileOpen(
+      InpScoreRequestFile,
+      FILE_READ | FILE_WRITE | FILE_CSV | FILE_ANSI | FILE_COMMON |
+      FILE_SHARE_READ | FILE_SHARE_WRITE,
+      ','
+   );
+   if(g_score_request_handle == INVALID_HANDLE)
+      return false;
+   FileSeek(g_score_request_handle, 0, SEEK_END);
+   if(is_new)
+      FileWrite(g_score_request_handle, "request_time", "bar_time", "engine_id",
+                "pivot_time", "pivot_price", "label", "side");
+   return true;
+}
+
+void QueueScoreRequests(const SPivot &pivot, datetime score_bar)
+{
+   if(g_score_request_handle == INVALID_HANDLE && !OpenScoreRequests())
+   {
+      BridgeAlert("cannot open score request file err=" + IntegerToString(GetLastError()));
+      return;
+   }
+   for(int i = 0; i < ENGINE_COUNT; i++)
+   {
+      if(!GroupMatches(g_engines[i], pivot))
+         continue;
+      FileWrite(g_score_request_handle, TS(TimeCurrent()), TS(score_bar),
+                g_engines[i].id, TS(pivot.time),
+                DoubleToString(pivot.price, _Digits), pivot.label, pivot.side);
+   }
+   FileFlush(g_score_request_handle);
+}
+
+bool PendingScoresReady()
+{
+   for(int i = 0; i < ENGINE_COUNT; i++)
+   {
+      if(!GroupMatches(g_engines[i], g_pending_pivot))
+         continue;
+      double score = 0.0;
+      datetime matched = 0;
+      if(!ExternalScore(g_pending_score_bar, g_engines[i].id, score, matched))
+         return false;
+   }
+   return true;
+}
+
 //──────────────────────────────────────────────────────────────────
 // Engine config
 //──────────────────────────────────────────────────────────────────
@@ -526,6 +948,7 @@ bool ExternalScore(datetime bar_time, string engine_id, double &score, datetime 
    int best_delta = 2147483647;
    double best_score = 0.0;
    datetime best_time = 0;
+   int score_shift_min = ScoreTimeShiftMinutes(bar_time);
    int tolerance_sec = MathMax(0, InpScoreTimeToleranceMin) * 60;
    while(!FileIsEnding(h))
    {
@@ -535,7 +958,7 @@ bool ExternalScore(datetime bar_time, string engine_id, double &score, datetime 
       if(t == "time" || t == "")
          continue;
       datetime row_time = StringToTime(t);
-      datetime shifted_time = row_time + InpScoreTimeShiftMin * 60;
+      datetime shifted_time = row_time + score_shift_min * 60;
       if(e != engine_id)
          continue;
       int delta = (int)MathAbs((long)(shifted_time - bar_time));
@@ -605,8 +1028,9 @@ bool GetEngineScore(const SEngine &eng, const SPivot &pivot, datetime bar_time, 
       if(ExternalScore(bar_time, eng.id, score, matched_time))
       {
          int delta_min = (int)MathAbs((long)(matched_time - bar_time)) / 60;
-         note = StringFormat("external_score shifted_match=%s delta_min=%d shift_min=%d",
-                             TS(matched_time), delta_min, InpScoreTimeShiftMin);
+         note = StringFormat(
+            "external_score shifted_match=%s delta_min=%d automatic_shift_min=%d",
+            TS(matched_time), delta_min, ScoreTimeShiftMinutes(bar_time));
          return true;
       }
       note = "missing_external_score";
@@ -795,6 +1219,10 @@ void InitPositions()
       g_positions[i].tp = 0.0;
       g_positions[i].lots = 0.0;
       g_positions[i].timeout_min = 0;
+      g_positions[i].adaptive_rule = false;
+      g_positions[i].score = 0.0;
+      g_positions[i].validated_threshold = 0.0;
+      g_positions[i].effective_threshold = 0.0;
    }
 }
 
@@ -805,6 +1233,156 @@ void InitPendingSignals()
       g_pending_signals[i].active = false;
       g_pending_signals[i].expiry_time = 0;
       g_pending_signals[i].trigger_price = 0.0;
+   }
+}
+
+void InitShadowCandidates()
+{
+   for(int i = 0; i < ArraySize(g_shadow_candidates); i++)
+      g_shadow_candidates[i].active = false;
+}
+
+void FillMarketSnapshot(SShadowCandidate &candidate)
+{
+   candidate.market_direction = "UNKNOWN";
+   candidate.market_structure = "UNKNOWN";
+   candidate.market_volatility = "UNKNOWN";
+   candidate.market_transition = "UNKNOWN";
+   candidate.market_confidence = 0.0;
+   candidate.market_strength = 0.0;
+   candidate.market_liquidity = 0.0;
+   candidate.market_exhaustion = 0.0;
+   if(!g_market_state_ready)
+      return;
+   candidate.market_direction = MarketMapDirectionName(g_market_state.direction);
+   candidate.market_structure = MarketMapStructureName(g_market_state.structure);
+   candidate.market_volatility =
+      MarketMapVolatilityPhaseName(g_market_state.volatility_phase);
+   candidate.market_transition = MarketMapTransitionName(g_market_state.transition);
+   candidate.market_confidence = g_market_state.state_confidence;
+   candidate.market_strength = g_market_state.strength_score;
+   candidate.market_liquidity = g_market_state.liquidity_score;
+   candidate.market_exhaustion = g_market_state.exhaustion_score;
+}
+
+bool ShadowCandidateExists(string candidate_id)
+{
+   for(int i = 0; i < ArraySize(g_shadow_candidates); i++)
+      if(g_shadow_candidates[i].active &&
+         g_shadow_candidates[i].candidate_id == candidate_id)
+         return true;
+   return false;
+}
+
+void QueueShadowCandidate(const SSignal &sig)
+{
+   if(!InpAdaptiveShadowOutcomes || sig.score >= sig.validated_threshold)
+      return;
+   double max_delta = MathMax(0.0, InpAdaptiveResearchMaxDelta);
+   if(sig.score < sig.validated_threshold - max_delta)
+      return;
+
+   string candidate_id = sig.engine_id + "_" +
+                         IntegerToString((int)sig.pivot_time) + "_" +
+                         IntegerToString((int)sig.signal_time);
+   if(ShadowCandidateExists(candidate_id))
+      return;
+
+   for(int i = 0; i < ArraySize(g_shadow_candidates); i++)
+   {
+      if(g_shadow_candidates[i].active)
+         continue;
+      SShadowCandidate candidate;
+      ZeroMemory(candidate);
+      candidate.active = true;
+      candidate.candidate_id = candidate_id;
+      candidate.entry_time = TimeCurrent();
+      candidate.utc_time = AdaptiveUtcTime(candidate.entry_time);
+      candidate.pivot_time = sig.pivot_time;
+      candidate.engine_id = sig.engine_id;
+      candidate.side = sig.side;
+      candidate.score = sig.score;
+      candidate.validated_threshold = sig.validated_threshold;
+      candidate.rule_threshold =
+         AdaptiveThreshold(sig.validated_threshold, candidate.entry_time);
+      candidate.in_rule_window = InAdaptiveTimeWindow(candidate.entry_time);
+      candidate.entry_price = sig.side == "BUY" ?
+                              SymbolInfoDouble(_Symbol, SYMBOL_ASK) :
+                              SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      double risk = sig.stop_pips * g_pip;
+      candidate.stop_price = sig.side == "BUY" ?
+                             candidate.entry_price - risk :
+                             candidate.entry_price + risk;
+      candidate.target_price = sig.side == "BUY" ?
+                               candidate.entry_price + risk * sig.target_r :
+                               candidate.entry_price - risk * sig.target_r;
+      candidate.expiry_time = candidate.entry_time +
+                              MathMax(1, sig.timeout_min) * 60;
+      FillMarketSnapshot(candidate);
+      g_shadow_candidates[i] = candidate;
+      g_dbg_shadow_candidates++;
+      string note = sig.score >= candidate.rule_threshold &&
+                    candidate.in_rule_window ?
+                    "ADAPTIVE_ELIGIBLE" : "RESEARCH_ONLY";
+      LogAdaptive(g_shadow_candidates[i], "CANDIDATE", "", 0.0, note);
+      return;
+   }
+   LogDebug("ADAPTIVE_SHADOW_FULL", "shadow candidate queue full");
+}
+
+void FinishShadowCandidate(int index, string outcome, double exit_price)
+{
+   SShadowCandidate candidate = g_shadow_candidates[index];
+   double pips = candidate.side == "BUY" ?
+                 (exit_price - candidate.entry_price) / g_pip :
+                 (candidate.entry_price - exit_price) / g_pip;
+   if(outcome == "TARGET")
+      g_dbg_shadow_wins++;
+   else if(outcome == "STOP")
+      g_dbg_shadow_losses++;
+   LogAdaptive(candidate, "OUTCOME", outcome, pips, "");
+   g_shadow_candidates[index].active = false;
+}
+
+void ManageShadowCandidates()
+{
+   if(!InpAdaptiveShadowOutcomes)
+      return;
+   double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   for(int i = 0; i < ArraySize(g_shadow_candidates); i++)
+   {
+      if(!g_shadow_candidates[i].active)
+         continue;
+      SShadowCandidate candidate = g_shadow_candidates[i];
+      if(candidate.side == "BUY")
+      {
+         if(bid <= candidate.stop_price)
+         {
+            FinishShadowCandidate(i, "STOP", candidate.stop_price);
+            continue;
+         }
+         if(bid >= candidate.target_price)
+         {
+            FinishShadowCandidate(i, "TARGET", candidate.target_price);
+            continue;
+         }
+      }
+      else
+      {
+         if(ask >= candidate.stop_price)
+         {
+            FinishShadowCandidate(i, "STOP", candidate.stop_price);
+            continue;
+         }
+         if(ask <= candidate.target_price)
+         {
+            FinishShadowCandidate(i, "TARGET", candidate.target_price);
+            continue;
+         }
+      }
+      if(TimeCurrent() >= candidate.expiry_time)
+         FinishShadowCandidate(i, "TIMEOUT", candidate.side == "BUY" ? bid : ask);
    }
 }
 
@@ -847,6 +1425,10 @@ void RegisterPosition(ulong ticket, const SSignal &sig, double entry, double sl,
          g_positions[i].tp = tp;
          g_positions[i].lots = lots;
          g_positions[i].timeout_min = sig.timeout_min;
+         g_positions[i].adaptive_rule = sig.adaptive_rule;
+         g_positions[i].score = sig.score;
+         g_positions[i].validated_threshold = sig.validated_threshold;
+         g_positions[i].effective_threshold = sig.effective_threshold;
          return;
       }
    }
@@ -854,6 +1436,13 @@ void RegisterPosition(ulong ticket, const SSignal &sig, double entry, double sl,
 
 bool OpenTrade(const SSignal &sig)
 {
+   string time_reason = "";
+   if(!TimeHealthy(time_reason))
+   {
+      LogEvent("BLOCK_TIME_SYNC", sig, sig.effective_threshold, time_reason);
+      TimeHealthAlert(time_reason);
+      return false;
+   }
    if(SpreadPips() > InpMaxSpreadPips)
    {
       LogEvent("BLOCK_SPREAD", sig, 0.0, "spread too wide");
@@ -901,7 +1490,11 @@ bool OpenTrade(const SSignal &sig)
    if(ticket == 0)
       ticket = g_trade.ResultOrder();
    RegisterPosition(ticket, sig, entry, sl, tp, lots);
-   LogTrade("OPEN", ticket, sig.engine_id, sig.side, entry, sl, tp, lots, 0.0, "opened");
+   string note = StringFormat(
+      "opened adaptive=%s score=%.6f validated_threshold=%.3f effective_threshold=%.3f utc=%s",
+      sig.adaptive_rule ? "true" : "false", sig.score,
+      sig.validated_threshold, sig.effective_threshold, TS(sig.utc_time));
+   LogTrade("OPEN", ticket, sig.engine_id, sig.side, entry, sl, tp, lots, 0.0, note);
    return true;
 }
 
@@ -1074,8 +1667,15 @@ void SetCluster(const SSignal &sig)
    g_last_cluster_times[slot] = now;
 }
 
-void ProcessPivot(const SPivot &pivot)
+void ProcessPivot(const SPivot &pivot, datetime score_bar_time)
 {
+   string time_reason = "";
+   if(!TimeHealthy(time_reason))
+   {
+      LogDebug("BLOCK_TIME_SYNC", time_reason);
+      TimeHealthAlert(time_reason);
+      return;
+   }
    int shift = iBarShift(_Symbol, InpSignalTF, pivot.time, false);
    if(shift >= 0)
    {
@@ -1101,7 +1701,7 @@ void ProcessPivot(const SPivot &pivot)
       if(!GroupMatches(eng, pivot))
          continue;
       g_dbg_group_matches++;
-      DebugShiftSweep(eng.id, iTime(_Symbol, InpSignalTF, 0));
+      DebugShiftSweep(eng.id, score_bar_time);
       if(!CooldownOk(eng.side))
       {
          g_dbg_cooldown_blocks++;
@@ -1110,9 +1710,12 @@ void ProcessPivot(const SPivot &pivot)
 
       double score = 0.0;
       string note = "";
-      datetime bar_time = iTime(_Symbol, InpSignalTF, 0);
-      bool have_score = GetEngineScore(eng, pivot, bar_time, score, note);
-      double effectiveThreshold = EffectiveThreshold(eng.threshold);
+      bool have_score = GetEngineScore(eng, pivot, score_bar_time, score, note);
+      double baseThreshold = EffectiveThreshold(eng.threshold);
+      double researchedThreshold = AdaptiveThreshold(eng.threshold, TimeCurrent());
+      double effectiveThreshold = baseThreshold;
+      if(InpAdaptiveAllowEntries && InAdaptiveTimeWindow(TimeCurrent()))
+         effectiveThreshold = MathMin(baseThreshold, researchedThreshold);
 
       SSignal sig;
       sig.active = true;
@@ -1127,6 +1730,10 @@ void ProcessPivot(const SPivot &pivot)
       sig.stop_pips = eng.stop_pips;
       sig.target_r = eng.target_r;
       sig.timeout_min = eng.timeout_min;
+      sig.validated_threshold = eng.threshold;
+      sig.effective_threshold = effectiveThreshold;
+      sig.adaptive_rule = false;
+      sig.utc_time = AdaptiveUtcTime(TimeCurrent());
 
       if(!have_score && InpDemoExploreMode && InpDemoExploreFallbackHeuristic)
       {
@@ -1147,6 +1754,20 @@ void ProcessPivot(const SPivot &pivot)
          LogEvent("BLOCK_MODEL_SCORE", sig, effectiveThreshold, note);
          continue;
       }
+      sig.score = score;
+      sig.adaptive_rule = InpAdaptiveAllowEntries &&
+                          InAdaptiveTimeWindow(TimeCurrent()) &&
+                          effectiveThreshold < baseThreshold &&
+                          score >= effectiveThreshold &&
+                          score < baseThreshold;
+      QueueShadowCandidate(sig);
+      if(sig.adaptive_rule)
+      {
+         note = AppendNote(note, StringFormat(
+            "ADAPTIVE_TIME_RULE utc_slot=%s validated_threshold=%.3f adaptive_threshold=%.3f delta=%.3f",
+            UtcSlot(TimeCurrent()), eng.threshold, effectiveThreshold,
+            eng.threshold - effectiveThreshold));
+      }
       if(score < effectiveThreshold)
       {
          g_dbg_threshold_blocks++;
@@ -1161,6 +1782,8 @@ void ProcessPivot(const SPivot &pivot)
       }
 
       g_dbg_signals++;
+      if(sig.adaptive_rule)
+         g_dbg_adaptive_signals++;
       LogEvent("SIGNAL", sig, effectiveThreshold, note);
       DrawSignal(sig);
       SetCluster(sig);
@@ -1181,7 +1804,16 @@ void ProcessPivot(const SPivot &pivot)
 
 int OnInit()
 {
+   if(InpAdaptiveThresholdDelta < 0.0 ||
+      InpAdaptiveResearchMaxDelta < 0.0 ||
+      InpAdaptiveMinScore < 0.0 ||
+      InpAdaptiveMinScore > 1.0)
+   {
+      Print("VECTOR80: invalid adaptive threshold inputs");
+      return INIT_PARAMETERS_INCORRECT;
+   }
    g_pip = Pip();
+   g_vector_time.Update(true);
    InitEngines();
    InitShiftSweep();
    OpenLogs();
@@ -1203,22 +1835,56 @@ int OnInit()
    g_atr_m5 = iATR(_Symbol, InpSignalTF, 14);
    g_ema50_h1 = iMA(_Symbol, PERIOD_H1, 50, 0, MODE_EMA, PRICE_CLOSE);
    g_ema200_h1 = iMA(_Symbol, PERIOD_H1, 200, 0, MODE_EMA, PRICE_CLOSE);
+   if(!g_market_map.Init(_Symbol, PERIOD_M5, MM_MODE_NATIVE))
+   {
+      Print("VECTOR80: failed to initialize MARKET_MAP");
+      return INIT_FAILED;
+   }
+   if(MQLInfoInteger(MQL_TESTER))
+      g_market_map.UseHistoricalBrokerTime();
+   else
+      g_market_map.SetLiveBrokerUtcOffset(
+         g_vector_time.BrokerUtcOffsetSeconds());
 
    InitPositions();
    InitPendingSignals();
+   InitShadowCandidates();
+   if(InpRequireLiveBridge)
+   {
+      OpenScoreRequests();
+      WriteMt5Heartbeat();
+   }
+   if(InpExportLiveTicks)
+      EnsureLiveTickFile();
+   if(InpRequireLiveBridge || InpExportLiveTicks || InpTimeHudEnabled)
+      EventSetTimer(1);
+   if(InpTimeHudEnabled)
+      g_vector_time.DrawHud(InpTimeHudCorner, InpTimeHudX, InpTimeHudY,
+                            InpTimeHudFontSize, InpTimeHudColor,
+                            InpTimeHudOpenColor, InpTimeHudClosedColor);
    Print("VECTOR80 prototype initialized. ScoreMode=", EnumToString(InpScoreMode),
-         " Trading=", (InpAllowTrading ? "true" : "false"));
+         " Trading=", (InpAllowTrading ? "true" : "false"),
+         " AdaptiveRule=", (InpAdaptiveTimeRuleEnabled ? "true" : "false"),
+         " AdaptiveEntries=", (InpAdaptiveAllowEntries ? "true" : "false"),
+         " UTCWindow=", IntegerToString(InpAdaptiveStartUtcMinutes), "-",
+         IntegerToString(InpAdaptiveEndUtcMinutes),
+         " Delta=", DoubleToString(InpAdaptiveThresholdDelta, 3),
+         " Time=", g_vector_time.Diagnostic());
    return INIT_SUCCEEDED;
 }
 
 void OnDeinit(const int reason)
 {
+   EventKillTimer();
+   g_vector_time.RemoveHud();
    int min_shift = g_dbg_min_pivot_shift == 999999 ? -1 : g_dbg_min_pivot_shift;
    string summary = StringFormat(
-      "bars=%I64d latest_pivots=%I64d pivot_too_old=%I64d min_shift=%d max_shift=%d group_matches=%I64d cluster_blocks=%I64d cooldown_blocks=%I64d score_missing=%I64d threshold_blocks=%I64d signals=%I64d trade_attempts=%I64d trades_opened=%I64d retest_queued=%I64d retest_filled=%I64d retest_expired=%I64d",
+      "bars=%I64d latest_pivots=%I64d pivot_too_old=%I64d min_shift=%d max_shift=%d group_matches=%I64d cluster_blocks=%I64d cooldown_blocks=%I64d score_missing=%I64d threshold_blocks=%I64d signals=%I64d adaptive_signals=%I64d shadow_candidates=%I64d shadow_wins=%I64d shadow_losses=%I64d trade_attempts=%I64d trades_opened=%I64d retest_queued=%I64d retest_filled=%I64d retest_expired=%I64d",
       g_dbg_bars, g_dbg_latest_pivots, g_dbg_pivot_too_old, min_shift, g_dbg_max_pivot_shift,
       g_dbg_group_matches, g_dbg_cluster_blocks, g_dbg_cooldown_blocks, g_dbg_score_missing,
-      g_dbg_threshold_blocks, g_dbg_signals, g_dbg_trade_attempts, g_dbg_trades_opened,
+      g_dbg_threshold_blocks, g_dbg_signals, g_dbg_adaptive_signals,
+      g_dbg_shadow_candidates, g_dbg_shadow_wins, g_dbg_shadow_losses,
+      g_dbg_trade_attempts, g_dbg_trades_opened,
       g_dbg_retest_queued, g_dbg_retest_filled, g_dbg_retest_expired
    );
    LogDebug("SUMMARY", summary);
@@ -1242,21 +1908,91 @@ void OnDeinit(const int reason)
    if(g_atr_m5 != INVALID_HANDLE) IndicatorRelease(g_atr_m5);
    if(g_ema50_h1 != INVALID_HANDLE) IndicatorRelease(g_ema50_h1);
    if(g_ema200_h1 != INVALID_HANDLE) IndicatorRelease(g_ema200_h1);
+   g_market_map.Release();
+   if(g_live_tick_handle != INVALID_HANDLE) FileClose(g_live_tick_handle);
+   if(g_score_request_handle != INVALID_HANDLE) FileClose(g_score_request_handle);
    CloseLogs();
+}
+
+void OnTimer()
+{
+   g_vector_time.Update();
+   if(!MQLInfoInteger(MQL_TESTER) && g_vector_time.Ready())
+      g_market_map.SetLiveBrokerUtcOffset(
+         g_vector_time.BrokerUtcOffsetSeconds());
+   if(InpTimeHudEnabled)
+      g_vector_time.DrawHud(InpTimeHudCorner, InpTimeHudX, InpTimeHudY,
+                            InpTimeHudFontSize, InpTimeHudColor,
+                            InpTimeHudOpenColor, InpTimeHudClosedColor);
+   string time_reason = "";
+   if(!TimeHealthy(time_reason))
+      TimeHealthAlert(time_reason);
+   if(InpRequireLiveBridge)
+      WriteMt5Heartbeat();
+   if(g_live_tick_handle != INVALID_HANDLE)
+      FileFlush(g_live_tick_handle);
+
+   string bridge_reason = "";
+   if(!BridgeHealthy(bridge_reason))
+   {
+      BridgeAlert(bridge_reason + "; new trades blocked");
+      if(g_pending_pivot_active && TimeLocal() >= g_pending_score_deadline)
+      {
+         LogDebug("BLOCK_BRIDGE_SCORE_TIMEOUT",
+                  "bridge unavailable while score request was pending");
+         g_pending_pivot_active = false;
+      }
+      return;
+   }
+
+   if(!g_pending_pivot_active)
+      return;
+   if(PendingScoresReady())
+   {
+      SPivot pivot = g_pending_pivot;
+      datetime score_bar = g_pending_score_bar;
+      g_pending_pivot_active = false;
+      ProcessPivot(pivot, score_bar);
+      return;
+   }
+   if(TimeLocal() >= g_pending_score_deadline)
+   {
+      string note = StringFormat("score timeout bar=%s pivot=%s label=%s",
+                                 TS(g_pending_score_bar), TS(g_pending_pivot.time),
+                                 g_pending_pivot.label);
+      LogDebug("BLOCK_BRIDGE_SCORE_TIMEOUT", note);
+      BridgeAlert(note + "; new trade blocked");
+      g_pending_pivot_active = false;
+   }
 }
 
 void OnTick()
 {
+   WriteLiveTick();
    ManagePositions();
    ManagePendingSignals();
+   ManageShadowCandidates();
    if(!IsNewBar())
       return;
    g_dbg_bars++;
+   g_market_state_ready = g_market_map.Update() &&
+                          g_market_map.GetState(g_market_state);
 
    SPivot p;
    if(LatestNewPivot(p))
    {
       g_dbg_latest_pivots++;
-      ProcessPivot(p);
+      if(!InpRequireLiveBridge)
+      {
+         ProcessPivot(p, iTime(_Symbol, InpSignalTF, 0));
+         return;
+      }
+      if(g_pending_pivot_active)
+         LogDebug("BLOCK_BRIDGE_PENDING_REPLACED", "previous score request did not complete");
+      g_pending_pivot = p;
+      g_pending_score_bar = iTime(_Symbol, InpSignalTF, 1);
+      g_pending_score_deadline = TimeLocal() + MathMax(1, InpScoreWaitSec);
+      g_pending_pivot_active = true;
+      QueueScoreRequests(p, g_pending_score_bar);
    }
 }

@@ -1,0 +1,23 @@
+{
+  "symbol": "EURUSD",
+  "year": 2023,
+  "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/EURUSD_TICK_dukascopy_2023.csv.gz",
+  "parts": [
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230101_20230201_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230201_20230301_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230301_20230401_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230401_20230501_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230501_20230601_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230601_20230701_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230701_20230801_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230801_20230901_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230901_20231001_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20231001_20231101_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20231101_20231201_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20231201_20240101_exclusive.csv.gz"
+  ],
+  "rows": 27545689,
+  "start": "2023-01-01T22:04:01.067000+0000",
+  "end": "2023-12-29T21:59:59.385000+0000",
+  "adjacent_duplicate_rows_removed": 0
+}

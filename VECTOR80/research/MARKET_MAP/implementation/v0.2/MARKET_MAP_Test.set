@@ -1,0 +1,6 @@
+InpWriteCsv=true||false||0||true||N
+InpUseCommonFiles=true||false||0||true||N
+InpCsvFile=MARKET_MAP_test_states_2025.csv
+InpMinStateConfidence=60.0||60.0||1.0||90.0||N
+InpMinLiquidity=50.0||50.0||1.0||90.0||N
+InpMaxExhaustion=60.0||60.0||1.0||90.0||N

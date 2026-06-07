@@ -1,0 +1,537 @@
+{
+  "symbol": "EURUSD",
+  "requested_start": "2023-01-01T00:00:00+00:00",
+  "requested_end_exclusive": "2025-01-01T00:00:00+00:00",
+  "months": [
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2023-01-01T00:00:00+00:00",
+      "requested_end_exclusive": "2023-02-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 530,
+        "empty": 214
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230101_20230201_exclusive.csv.gz",
+      "rows": 2971538,
+      "start": "2023-01-01T22:04:01.067000+00:00",
+      "end": "2023-01-31T23:59:58.334000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.04823,
+      "max_ask": 1.09298
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2023-02-01T00:00:00+00:00",
+      "requested_end_exclusive": "2023-03-01T00:00:00+00:00",
+      "requested_hours": 672,
+      "hour_status": {
+        "ok": 480,
+        "empty": 192
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230201_20230301_exclusive.csv.gz",
+      "rows": 2687210,
+      "start": "2023-02-01T00:00:00.369000+00:00",
+      "end": "2023-02-28T23:59:57.003000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.05328,
+      "max_ask": 1.10336
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2023-03-01T00:00:00+00:00",
+      "requested_end_exclusive": "2023-04-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 550,
+        "empty": 194
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230301_20230401_exclusive.csv.gz",
+      "rows": 3380023,
+      "start": "2023-03-01T00:00:00.329000+00:00",
+      "end": "2023-03-31T20:59:56.463000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.05158,
+      "max_ask": 1.093
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2023-04-01T00:00:00+00:00",
+      "requested_end_exclusive": "2023-05-01T00:00:00+00:00",
+      "requested_hours": 720,
+      "hour_status": {
+        "ok": 483,
+        "empty": 237
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230401_20230501_exclusive.csv.gz",
+      "rows": 1881558,
+      "start": "2023-04-02T21:00:00.164000+00:00",
+      "end": "2023-04-30T23:59:57.986000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.07882,
+      "max_ask": 1.10957
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2023-05-01T00:00:00+00:00",
+      "requested_end_exclusive": "2023-06-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 552,
+        "empty": 192
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230501_20230601_exclusive.csv.gz",
+      "rows": 2236715,
+      "start": "2023-05-01T00:00:00.109000+00:00",
+      "end": "2023-05-31T23:59:47.146000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.06352,
+      "max_ask": 1.10919
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2023-06-01T00:00:00+00:00",
+      "requested_end_exclusive": "2023-07-01T00:00:00+00:00",
+      "requested_hours": 720,
+      "hour_status": {
+        "ok": 525,
+        "empty": 195
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230601_20230701_exclusive.csv.gz",
+      "rows": 2051718,
+      "start": "2023-06-01T00:00:01.493000+00:00",
+      "end": "2023-06-30T20:59:57.926000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.06617,
+      "max_ask": 1.10124
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2023-07-01T00:00:00+00:00",
+      "requested_end_exclusive": "2023-08-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 507,
+        "empty": 237
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230701_20230801_exclusive.csv.gz",
+      "rows": 2114339,
+      "start": "2023-07-02T21:00:16.472000+00:00",
+      "end": "2023-07-31T23:59:53.832000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.08337,
+      "max_ask": 1.12758
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2023-08-01T00:00:00+00:00",
+      "requested_end_exclusive": "2023-09-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 552,
+        "empty": 192
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230801_20230901_exclusive.csv.gz",
+      "rows": 2238800,
+      "start": "2023-08-01T00:00:00.150000+00:00",
+      "end": "2023-08-31T23:59:55.295000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.07658,
+      "max_ask": 1.10653
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2023-09-01T00:00:00+00:00",
+      "requested_end_exclusive": "2023-10-01T00:00:00+00:00",
+      "requested_hours": 720,
+      "hour_status": {
+        "ok": 501,
+        "empty": 219
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230901_20231001_exclusive.csv.gz",
+      "rows": 1730224,
+      "start": "2023-09-01T00:00:00.132000+00:00",
+      "end": "2023-09-29T20:59:56.147000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.0488,
+      "max_ask": 1.08821
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2023-10-01T00:00:00+00:00",
+      "requested_end_exclusive": "2023-11-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 531,
+        "empty": 213
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20231001_20231101_exclusive.csv.gz",
+      "rows": 2199266,
+      "start": "2023-10-01T21:00:29.625000+00:00",
+      "end": "2023-10-31T23:59:58.229000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.04483,
+      "max_ask": 1.06946
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2023-11-01T00:00:00+00:00",
+      "requested_end_exclusive": "2023-12-01T00:00:00+00:00",
+      "requested_hours": 720,
+      "hour_status": {
+        "ok": 527,
+        "empty": 193
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20231101_20231201_exclusive.csv.gz",
+      "rows": 1940625,
+      "start": "2023-11-01T00:00:00.407000+00:00",
+      "end": "2023-11-30T23:59:55.683000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.05167,
+      "max_ask": 1.10174
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2023-12-01T00:00:00+00:00",
+      "requested_end_exclusive": "2024-01-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 487,
+        "empty": 257
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20231201_20240101_exclusive.csv.gz",
+      "rows": 2113673,
+      "start": "2023-12-01T00:00:01.429000+00:00",
+      "end": "2023-12-29T21:59:59.385000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.07236,
+      "max_ask": 1.11397
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2024-01-01T00:00:00+00:00",
+      "requested_end_exclusive": "2024-02-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 530,
+        "empty": 214
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240101_20240201_exclusive.csv.gz",
+      "rows": 2173021,
+      "start": "2024-01-01T22:00:12.108000+00:00",
+      "end": "2024-01-31T23:59:57.610000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.07949,
+      "max_ask": 1.10491
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2024-02-01T00:00:00+00:00",
+      "requested_end_exclusive": "2024-03-01T00:00:00+00:00",
+      "requested_hours": 696,
+      "hour_status": {
+        "ok": 504,
+        "empty": 192
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240201_20240301_exclusive.csv.gz",
+      "rows": 1709485,
+      "start": "2024-02-01T00:00:00.292000+00:00",
+      "end": "2024-02-29T23:59:54.137000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.06949,
+      "max_ask": 1.08978
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2024-03-01T00:00:00+00:00",
+      "requested_end_exclusive": "2024-04-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 505,
+        "empty": 239
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240301_20240401_exclusive.csv.gz",
+      "rows": 1477402,
+      "start": "2024-03-01T00:00:00.588000+00:00",
+      "end": "2024-03-31T23:59:59.734000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.07678,
+      "max_ask": 1.09815
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2024-04-01T00:00:00+00:00",
+      "requested_end_exclusive": "2024-05-01T00:00:00+00:00",
+      "requested_hours": 720,
+      "hour_status": {
+        "ok": 528,
+        "empty": 192
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240401_20240501_exclusive.csv.gz",
+      "rows": 1563493,
+      "start": "2024-04-01T00:00:00.244000+00:00",
+      "end": "2024-04-30T23:59:52.438000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.0601,
+      "max_ask": 1.08852
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2024-05-01T00:00:00+00:00",
+      "requested_end_exclusive": "2024-06-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 549,
+        "empty": 195
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240501_20240601_exclusive.csv.gz",
+      "rows": 1244928,
+      "start": "2024-05-01T00:00:00.355000+00:00",
+      "end": "2024-05-31T20:59:59.378000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.06494,
+      "max_ask": 1.0895
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2024-06-01T00:00:00+00:00",
+      "requested_end_exclusive": "2024-07-01T00:00:00+00:00",
+      "requested_hours": 720,
+      "hour_status": {
+        "ok": 483,
+        "empty": 237
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240601_20240701_exclusive.csv.gz",
+      "rows": 1334494,
+      "start": "2024-06-02T21:00:07.220000+00:00",
+      "end": "2024-06-30T23:59:58.941000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.0666,
+      "max_ask": 1.09161
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2024-07-01T00:00:00+00:00",
+      "requested_end_exclusive": "2024-08-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 552,
+        "empty": 192
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240701_20240801_exclusive.csv.gz",
+      "rows": 1463333,
+      "start": "2024-07-01T00:00:00.151000+00:00",
+      "end": "2024-07-31T23:59:55.611000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.071,
+      "max_ask": 1.09482
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2024-08-01T00:00:00+00:00",
+      "requested_end_exclusive": "2024-09-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 525,
+        "empty": 219
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240801_20240901_exclusive.csv.gz",
+      "rows": 1850658,
+      "start": "2024-08-01T00:00:00.487000+00:00",
+      "end": "2024-08-30T20:59:59.500000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.07774,
+      "max_ask": 1.12018
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2024-09-01T00:00:00+00:00",
+      "requested_end_exclusive": "2024-10-01T00:00:00+00:00",
+      "requested_hours": 720,
+      "hour_status": {
+        "ok": 507,
+        "empty": 213
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240901_20241001_exclusive.csv.gz",
+      "rows": 1797377,
+      "start": "2024-09-01T21:00:05.756000+00:00",
+      "end": "2024-09-30T23:59:57.648000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.10019,
+      "max_ask": 1.12142
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2024-10-01T00:00:00+00:00",
+      "requested_end_exclusive": "2024-11-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 552,
+        "empty": 192
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20241001_20241101_exclusive.csv.gz",
+      "rows": 1769081,
+      "start": "2024-10-01T00:00:00.179000+00:00",
+      "end": "2024-10-31T23:59:59.713000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.07612,
+      "max_ask": 1.11442
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2024-11-01T00:00:00+00:00",
+      "requested_end_exclusive": "2024-12-01T00:00:00+00:00",
+      "requested_hours": 720,
+      "hour_status": {
+        "ok": 501,
+        "empty": 219
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20241101_20241201_exclusive.csv.gz",
+      "rows": 2323977,
+      "start": "2024-11-01T00:00:00.173000+00:00",
+      "end": "2024-11-29T21:59:59.223000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.03325,
+      "max_ask": 1.09376
+    },
+    {
+      "symbol": "EURUSD",
+      "requested_start": "2024-12-01T00:00:00+00:00",
+      "requested_end_exclusive": "2025-01-01T00:00:00+00:00",
+      "requested_hours": 744,
+      "hour_status": {
+        "ok": 514,
+        "empty": 230
+      },
+      "error_hours": {},
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20241201_20250101_exclusive.csv.gz",
+      "rows": 1979900,
+      "start": "2024-12-01T22:00:48.121000+00:00",
+      "end": "2024-12-31T21:59:58.249000+00:00",
+      "duplicate_timestamps": 0,
+      "ask_below_bid": 0,
+      "outside_requested_period": 0,
+      "min_bid": 1.03429,
+      "max_ask": 1.063
+    }
+  ],
+  "years": [
+    {
+      "symbol": "EURUSD",
+      "year": 2023,
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/EURUSD_TICK_dukascopy_2023.csv.gz",
+      "parts": [
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230101_20230201_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230201_20230301_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230301_20230401_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230401_20230501_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230501_20230601_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230601_20230701_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230701_20230801_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230801_20230901_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230901_20231001_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20231001_20231101_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20231101_20231201_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20231201_20240101_exclusive.csv.gz"
+      ],
+      "rows": 27545689,
+      "start": "2023-01-01T22:04:01.067000+0000",
+      "end": "2023-12-29T21:59:59.385000+0000",
+      "adjacent_duplicate_rows_removed": 0
+    },
+    {
+      "symbol": "EURUSD",
+      "year": 2024,
+      "file": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/EURUSD_TICK_dukascopy_2024.csv.gz",
+      "parts": [
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240101_20240201_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240201_20240301_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240301_20240401_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240401_20240501_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240501_20240601_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240601_20240701_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240701_20240801_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240801_20240901_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20240901_20241001_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20241001_20241101_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20241101_20241201_exclusive.csv.gz",
+        "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20241201_20250101_exclusive.csv.gz"
+      ],
+      "rows": 20687149,
+      "start": "2024-01-01T22:00:12.108000+0000",
+      "end": "2024-12-31T21:59:58.249000+0000",
+      "adjacent_duplicate_rows_removed": 0
+    }
+  ],
+  "rows": 48232838,
+  "error_hours": 0
+}

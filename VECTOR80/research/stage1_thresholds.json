@@ -1,0 +1,288 @@
+{
+  "BULL_TREND_BREAK_LOW": {
+    "zone_pct": 70,
+    "K": 5,
+    "rules": [
+      {
+        "indicator": "rsi14",
+        "direction": "<=",
+        "threshold": 37.78349,
+        "cohens_d": -1.679,
+        "auc": 0.884
+      },
+      {
+        "indicator": "dist_ema20_atr",
+        "direction": "<=",
+        "threshold": -1.370905,
+        "cohens_d": -1.577,
+        "auc": 0.879
+      },
+      {
+        "indicator": "bb_pctB",
+        "direction": "<=",
+        "threshold": 0.14088,
+        "cohens_d": -1.593,
+        "auc": 0.867
+      },
+      {
+        "indicator": "minus_di",
+        "direction": ">=",
+        "threshold": 28.815385,
+        "cohens_d": 1.472,
+        "auc": 0.863
+      },
+      {
+        "indicator": "dist_ema50_atr",
+        "direction": "<=",
+        "threshold": -2.05417,
+        "cohens_d": -1.531,
+        "auc": 0.862
+      }
+    ]
+  },
+  "BEAR_TREND_BREAK_HIGH": {
+    "zone_pct": 80,
+    "K": 5,
+    "rules": [
+      {
+        "indicator": "rsi14",
+        "direction": ">=",
+        "threshold": 58.95912,
+        "cohens_d": 1.547,
+        "auc": 0.862
+      },
+      {
+        "indicator": "dist_ema20_atr",
+        "direction": ">=",
+        "threshold": 1.007462,
+        "cohens_d": 1.464,
+        "auc": 0.855
+      },
+      {
+        "indicator": "dist_ema50_atr",
+        "direction": ">=",
+        "threshold": 1.48963,
+        "cohens_d": 1.423,
+        "auc": 0.84
+      },
+      {
+        "indicator": "minus_di",
+        "direction": "<=",
+        "threshold": 16.79235,
+        "cohens_d": -1.388,
+        "auc": 0.84
+      },
+      {
+        "indicator": "bb_pctB",
+        "direction": ">=",
+        "threshold": 0.77698,
+        "cohens_d": 1.442,
+        "auc": 0.839
+      }
+    ]
+  },
+  "BULL_CONTINUATION_HIGH": {
+    "zone_pct": 70,
+    "K": 5,
+    "rules": [
+      {
+        "indicator": "rsi14",
+        "direction": ">=",
+        "threshold": 61.886695,
+        "cohens_d": 1.608,
+        "auc": 0.872
+      },
+      {
+        "indicator": "dist_ema20_atr",
+        "direction": ">=",
+        "threshold": 1.3941,
+        "cohens_d": 1.54,
+        "auc": 0.868
+      },
+      {
+        "indicator": "dist_ema50_atr",
+        "direction": ">=",
+        "threshold": 2.152535,
+        "cohens_d": 1.539,
+        "auc": 0.859
+      },
+      {
+        "indicator": "plus_di",
+        "direction": ">=",
+        "threshold": 28.87449,
+        "cohens_d": 1.471,
+        "auc": 0.856
+      },
+      {
+        "indicator": "stoch_k",
+        "direction": ">=",
+        "threshold": 82.37103,
+        "cohens_d": 1.601,
+        "auc": 0.854
+      }
+    ]
+  },
+  "BEAR_CONTINUATION_LOW": {
+    "zone_pct": 70,
+    "K": 5,
+    "rules": [
+      {
+        "indicator": "rsi14",
+        "direction": "<=",
+        "threshold": 37.74243,
+        "cohens_d": -1.722,
+        "auc": 0.891
+      },
+      {
+        "indicator": "dist_ema20_atr",
+        "direction": "<=",
+        "threshold": -1.430378,
+        "cohens_d": -1.63,
+        "auc": 0.888
+      },
+      {
+        "indicator": "bb_pctB",
+        "direction": "<=",
+        "threshold": 0.144524,
+        "cohens_d": -1.606,
+        "auc": 0.875
+      },
+      {
+        "indicator": "dist_ema50_atr",
+        "direction": "<=",
+        "threshold": -2.033833,
+        "cohens_d": -1.603,
+        "auc": 0.872
+      },
+      {
+        "indicator": "stoch_k",
+        "direction": "<=",
+        "threshold": 17.688491,
+        "cohens_d": -1.656,
+        "auc": 0.866
+      }
+    ]
+  },
+  "BUY_PULLBACK_UPTREND": {
+    "zone_pct": 60,
+    "K": 5,
+    "rules": [
+      {
+        "indicator": "stoch_k",
+        "direction": "<=",
+        "threshold": 26.462124,
+        "cohens_d": -1.096,
+        "auc": 0.761
+      },
+      {
+        "indicator": "macd_hist",
+        "direction": "<=",
+        "threshold": -5e-05,
+        "cohens_d": -0.84,
+        "auc": 0.758
+      },
+      {
+        "indicator": "h1_ema50_slope_pips",
+        "direction": ">=",
+        "threshold": 18.45628,
+        "cohens_d": 0.817,
+        "auc": 0.755
+      },
+      {
+        "indicator": "h1_dist_ema200_pips",
+        "direction": ">=",
+        "threshold": 50.320558,
+        "cohens_d": 0.824,
+        "auc": 0.755
+      },
+      {
+        "indicator": "williams_r14",
+        "direction": "<=",
+        "threshold": -76.92308,
+        "cohens_d": -1.059,
+        "auc": 0.755
+      }
+    ]
+  },
+  "SELL_PULLBACK_DOWNTREND": {
+    "zone_pct": 80,
+    "K": 3,
+    "rules": [
+      {
+        "indicator": "h1_dist_ema200_pips",
+        "direction": "<=",
+        "threshold": -18.951038,
+        "cohens_d": -1.185,
+        "auc": 0.827
+      },
+      {
+        "indicator": "h1_ema200_slope_pips",
+        "direction": "<=",
+        "threshold": -3.230296,
+        "cohens_d": -1.122,
+        "auc": 0.809
+      },
+      {
+        "indicator": "h1_ema50_slope_pips",
+        "direction": "<=",
+        "threshold": -8.415552,
+        "cohens_d": -1.035,
+        "auc": 0.787
+      }
+    ]
+  },
+  "WEAK_HIGH_IN_UPTREND": {
+    "zone_pct": 70,
+    "K": 3,
+    "rules": [
+      {
+        "indicator": "h1_ema50_slope_pips",
+        "direction": ">=",
+        "threshold": 15.798676,
+        "cohens_d": 0.841,
+        "auc": 0.761
+      },
+      {
+        "indicator": "macd_hist",
+        "direction": ">=",
+        "threshold": 3e-05,
+        "cohens_d": 0.791,
+        "auc": 0.751
+      },
+      {
+        "indicator": "stoch_k",
+        "direction": ">=",
+        "threshold": 68.809524,
+        "cohens_d": 1.051,
+        "auc": 0.749
+      }
+    ]
+  },
+  "WEAK_LOW_IN_DOWNTREND": {
+    "zone_pct": 80,
+    "K": 3,
+    "rules": [
+      {
+        "indicator": "h1_ema200_slope_pips",
+        "direction": "<=",
+        "threshold": -4.12672,
+        "cohens_d": -1.196,
+        "auc": 0.827
+      },
+      {
+        "indicator": "h1_dist_ema200_pips",
+        "direction": "<=",
+        "threshold": -13.55703,
+        "cohens_d": -1.069,
+        "auc": 0.798
+      },
+      {
+        "indicator": "h1_ema50_slope_pips",
+        "direction": "<=",
+        "threshold": -8.97813,
+        "cohens_d": -1.082,
+        "auc": 0.798
+      }
+    ]
+  }
+}

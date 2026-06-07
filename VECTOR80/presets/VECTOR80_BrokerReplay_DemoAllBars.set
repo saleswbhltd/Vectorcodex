@@ -3,9 +3,8 @@
 
 ; === Model / Signal ===
 InpScoreMode=0||0||0||1||N
-InpScoreFileCommon=VECTOR80_model_scores_broker_all_bars.csv
-InpScoreTimeShiftMin=180||180||1||1800||N
-InpScoreTimeToleranceMin=5||5||1||50||N
+InpScoreFileCommon=VECTOR80_model_scores_live.csv
+InpScoreTimeToleranceMin=0||0||1||50||N
 InpDebugShiftSweep=false||false||0||true||N
 InpDebugShiftSweepFromMin=-360||-360||1||-3600||N
 InpDebugShiftSweepToMin=360||360||1||3600||N
@@ -21,6 +20,17 @@ InpDemoExploreMode=false||false||0||true||N
 InpDemoExploreMinScore=0.55||0.55||0.01||0.95||N
 InpDemoExploreFallbackHeuristic=false||false||0||true||N
 
+; === Adaptive UTC Threshold Rule ===
+InpAdaptiveTimeRuleEnabled=true||false||0||true||N
+InpAdaptiveAllowEntries=true||false||0||true||N
+InpAdaptiveStartUtcMinutes=0||0||15||1425||N
+InpAdaptiveEndUtcMinutes=120||120||15||1440||N
+InpAdaptiveThresholdDelta=0.08||0.08||0.01||0.20||N
+InpAdaptiveMinScore=0.70||0.70||0.01||0.95||N
+InpAdaptiveShadowOutcomes=true||false||0||true||N
+InpAdaptiveResearchMaxDelta=0.15||0.15||0.01||0.30||N
+InpAdaptiveLogFile=VECTOR80_live_adaptive_thresholds.csv
+
 ; === ZigZag Lines MTF ===
 InpZZIndicatorName=Market\ZigZag Lines MTF for MT5
 InpSignalTF=5||0||0||49153||N
@@ -32,7 +42,7 @@ InpZZIndPeriod=0||0||1||10||N
 InpZZScanBars=300||300||1||3000||N
 
 ; === Risk ===
-InpRiskPct=0.1||0.1||0.1||10.0||N
+InpRiskPct=1.0||1.0||0.1||10.0||N
 InpMagic=20800080||20800080||1||208000800||N
 InpMaxOpenPositions=2||2||1||10||N
 InpMaxSpreadPips=2.5||2.5||0.1||10.0||N
@@ -54,8 +64,29 @@ InpHeuristicLLThreshold=0.88||0.88||0.01||0.99||N
 InpHeuristicHLThreshold=0.90||0.90||0.01||0.99||N
 InpHeuristicHHThreshold=0.90||0.90||0.01||0.99||N
 
+; === Live Python Bridge ===
+InpRequireLiveBridge=true||false||0||true||N
+InpExportLiveTicks=true||false||0||true||N
+InpBridgeHeartbeatFile=VECTOR80_bridge_heartbeat.csv
+InpMt5HeartbeatFile=VECTOR80_mt5_heartbeat.csv
+InpScoreRequestFile=VECTOR80_score_requests.csv
+InpBridgeMaxAgeSec=15||15||1||120||N
+InpScoreWaitSec=30||30||1||120||N
+InpBridgeAlertCooldownSec=900||900||60||3600||N
+InpBridgePushNotifications=true||false||0||true||N
+
 ; === Logging ===
 InpUseCommonFiles=true||false||0||true||N
-InpEventLogFile=VECTOR80_demo_all_bars_events.csv
-InpTradeLogFile=VECTOR80_demo_all_bars_trades.csv
+InpEventLogFile=VECTOR80_live_events.csv
+InpTradeLogFile=VECTOR80_live_trades.csv
 InpDebugLogging=true||false||0||true||N
+
+; === Time HUD ===
+InpTimeHudEnabled=true||false||0||true||N
+InpTimeHudCorner=0||0||0||3||N
+InpTimeHudX=10||10||1||100||N
+InpTimeHudY=20||20||1||200||N
+InpTimeHudFontSize=9||9||1||16||N
+InpTimeHudColor=16777215
+InpTimeHudOpenColor=65280
+InpTimeHudClosedColor=8421504

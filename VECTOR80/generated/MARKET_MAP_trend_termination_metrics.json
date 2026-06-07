@@ -1,0 +1,416 @@
+{
+  "15": {
+    "train_rows": 8640,
+    "test_rows": 1348,
+    "continuation_rate": 0.4547477744807122,
+    "accuracy": 0.5511869436201781,
+    "balanced_accuracy": 0.5254796861648412,
+    "roc_auc": 0.5273096514299032,
+    "confidence": [
+      {
+        "confidence": 0.55,
+        "coverage": 0.672106824925816,
+        "rows": 906,
+        "accuracy": 0.5640176600441501
+      },
+      {
+        "confidence": 0.6,
+        "coverage": 0.3850148367952522,
+        "rows": 519,
+        "accuracy": 0.5703275529865125
+      },
+      {
+        "confidence": 0.65,
+        "coverage": 0.1943620178041543,
+        "rows": 262,
+        "accuracy": 0.5725190839694656
+      },
+      {
+        "confidence": 0.7,
+        "coverage": 0.07937685459940653,
+        "rows": 107,
+        "accuracy": 0.5794392523364486
+      },
+      {
+        "confidence": 0.75,
+        "coverage": 0.020771513353115726,
+        "rows": 28,
+        "accuracy": 0.6071428571428571
+      },
+      {
+        "confidence": 0.8,
+        "coverage": 0.0066765578635014835,
+        "rows": 9,
+        "accuracy": 0.6666666666666666
+      }
+    ],
+    "top_features": [
+      {
+        "feature": "atr14_pips",
+        "importance": 0.015340191541543247,
+        "importance_std": 0.007711682282703804,
+        "horizon_min": 15
+      },
+      {
+        "feature": "tick_count",
+        "importance": 0.009643661706118101,
+        "importance_std": 0.002320497476951658,
+        "horizon_min": 15
+      },
+      {
+        "feature": "current_range_expansion",
+        "importance": 0.0049920653416342334,
+        "importance_std": 0.003055297871570657,
+        "horizon_min": 15
+      },
+      {
+        "feature": "time_sin",
+        "importance": 0.004832706328861125,
+        "importance_std": 0.004932274583065824,
+        "horizon_min": 15
+      },
+      {
+        "feature": "max_tick_interval_ms",
+        "importance": 0.004214801744515118,
+        "importance_std": 0.004899640787398299,
+        "horizon_min": 15
+      },
+      {
+        "feature": "vel_ratio_2nd_to_1st",
+        "importance": 0.003929819888803876,
+        "importance_std": 0.002989356452101198,
+        "horizon_min": 15
+      },
+      {
+        "feature": "median_tick_interval_ms",
+        "importance": 0.0032550964921041815,
+        "importance_std": 0.0013118132646024595,
+        "horizon_min": 15
+      },
+      {
+        "feature": "signed_body_to_range",
+        "importance": 0.0031592147462573992,
+        "importance_std": 0.0017409900669524646,
+        "horizon_min": 15
+      },
+      {
+        "feature": "rsi14",
+        "importance": 0.002523998180022491,
+        "importance_std": 0.0015267032117755848,
+        "horizon_min": 15
+      },
+      {
+        "feature": "atr_ratio_5_50",
+        "importance": 0.002104959438914311,
+        "importance_std": 0.0020574045687887185,
+        "horizon_min": 15
+      },
+      {
+        "feature": "max_run_dn_pips_intrabar",
+        "importance": 0.0015700635882412329,
+        "importance_std": 0.003387980524926534,
+        "horizon_min": 15
+      },
+      {
+        "feature": "max_run_up_pips_intrabar",
+        "importance": 0.0014257970724995239,
+        "importance_std": 0.0024254558957552195,
+        "horizon_min": 15
+      },
+      {
+        "feature": "spread_avg",
+        "importance": 0.0009450566523510284,
+        "importance_std": 0.00334129197103921,
+        "horizon_min": 15
+      },
+      {
+        "feature": "dow_cos",
+        "importance": 0.0008505065974188097,
+        "importance_std": 0.0013251409388892572,
+        "horizon_min": 15
+      },
+      {
+        "feature": "velocity_change",
+        "importance": 0.0007120107423067345,
+        "importance_std": 0.0018209319280110977,
+        "horizon_min": 15
+      }
+    ]
+  },
+  "30": {
+    "train_rows": 10658,
+    "test_rows": 1647,
+    "continuation_rate": 0.46083788706739526,
+    "accuracy": 0.5391621129326047,
+    "balanced_accuracy": 0.5001913969305274,
+    "roc_auc": 0.5183244014765753,
+    "confidence": [
+      {
+        "confidence": 0.55,
+        "coverage": 0.6338797814207651,
+        "rows": 1044,
+        "accuracy": 0.553639846743295
+      },
+      {
+        "confidence": 0.6,
+        "coverage": 0.13418336369156042,
+        "rows": 221,
+        "accuracy": 0.5882352941176471
+      },
+      {
+        "confidence": 0.65,
+        "coverage": 0.03825136612021858,
+        "rows": 63,
+        "accuracy": 0.6984126984126984
+      },
+      {
+        "confidence": 0.7,
+        "coverage": 0.008500303582270795,
+        "rows": 14,
+        "accuracy": 0.6428571428571429
+      },
+      {
+        "confidence": 0.75,
+        "coverage": 0.0,
+        "rows": 0,
+        "accuracy": null
+      },
+      {
+        "confidence": 0.8,
+        "coverage": 0.0,
+        "rows": 0,
+        "accuracy": null
+      }
+    ],
+    "top_features": [
+      {
+        "feature": "atr14_pips",
+        "importance": 0.018960462438723236,
+        "importance_std": 0.006920619854298361,
+        "horizon_min": 30
+      },
+      {
+        "feature": "max_tick_interval_ms",
+        "importance": 0.012272104119930138,
+        "importance_std": 0.004749026071303787,
+        "horizon_min": 30
+      },
+      {
+        "feature": "plus_di",
+        "importance": 0.005123057840449063,
+        "importance_std": 0.0018844320096124965,
+        "horizon_min": 30
+      },
+      {
+        "feature": "time_sin",
+        "importance": 0.0044340288905505565,
+        "importance_std": 0.002991136112172064,
+        "horizon_min": 30
+      },
+      {
+        "feature": "vel_ratio_2nd_to_1st",
+        "importance": 0.002231628862063606,
+        "importance_std": 0.0019222053919047606,
+        "horizon_min": 30
+      },
+      {
+        "feature": "current_efficiency",
+        "importance": 0.0016942337594510804,
+        "importance_std": 0.003015865164874965,
+        "horizon_min": 30
+      },
+      {
+        "feature": "directional_exhaustion",
+        "importance": 0.001669307647568452,
+        "importance_std": 0.004493368812466141,
+        "horizon_min": 30
+      },
+      {
+        "feature": "adx14",
+        "importance": 0.0014771688684731333,
+        "importance_std": 0.002932364035187326,
+        "horizon_min": 30
+      },
+      {
+        "feature": "atr_ratio_5_50",
+        "importance": 0.0013970492231361042,
+        "importance_std": 0.0019209784073302037,
+        "horizon_min": 30
+      },
+      {
+        "feature": "rsi14",
+        "importance": 0.0008678144547709099,
+        "importance_std": 0.0012320510060099103,
+        "horizon_min": 30
+      },
+      {
+        "feature": "tick_count",
+        "importance": 0.0007310175788436179,
+        "importance_std": 0.004613730999161596,
+        "horizon_min": 30
+      },
+      {
+        "feature": "atr_pct100",
+        "importance": 0.0005648434996259998,
+        "importance_std": 0.0019247598476681465,
+        "horizon_min": 30
+      },
+      {
+        "feature": "current_range_expansion",
+        "importance": 0.0002740388609953293,
+        "importance_std": 0.0010334114683368265,
+        "horizon_min": 30
+      },
+      {
+        "feature": "velocity_change",
+        "importance": 0.00020311813790068188,
+        "importance_std": 0.0029891310303897297,
+        "horizon_min": 30
+      },
+      {
+        "feature": "dow_cos",
+        "importance": 2.344241474669939e-05,
+        "importance_std": 0.0007622457899665173,
+        "horizon_min": 30
+      }
+    ]
+  },
+  "60": {
+    "train_rows": 11826,
+    "test_rows": 1790,
+    "continuation_rate": 0.4653631284916201,
+    "accuracy": 0.535754189944134,
+    "balanced_accuracy": 0.5046225386706407,
+    "roc_auc": 0.5285995275853288,
+    "confidence": [
+      {
+        "confidence": 0.55,
+        "coverage": 0.4877094972067039,
+        "rows": 873,
+        "accuracy": 0.5521191294387171
+      },
+      {
+        "confidence": 0.6,
+        "coverage": 0.1430167597765363,
+        "rows": 256,
+        "accuracy": 0.58984375
+      },
+      {
+        "confidence": 0.65,
+        "coverage": 0.045251396648044694,
+        "rows": 81,
+        "accuracy": 0.6666666666666666
+      },
+      {
+        "confidence": 0.7,
+        "coverage": 0.013407821229050279,
+        "rows": 24,
+        "accuracy": 0.75
+      },
+      {
+        "confidence": 0.75,
+        "coverage": 0.0016759776536312849,
+        "rows": 3,
+        "accuracy": 0.6666666666666666
+      },
+      {
+        "confidence": 0.8,
+        "coverage": 0.0,
+        "rows": 0,
+        "accuracy": null
+      }
+    ],
+    "top_features": [
+      {
+        "feature": "max_tick_interval_ms",
+        "importance": 0.009990328419769146,
+        "importance_std": 0.0024327012757465565,
+        "horizon_min": 60
+      },
+      {
+        "feature": "atr14_pips",
+        "importance": 0.008732395779628477,
+        "importance_std": 0.0049987852908712875,
+        "horizon_min": 60
+      },
+      {
+        "feature": "minus_di",
+        "importance": 0.006842611652811614,
+        "importance_std": 0.0036834790633816896,
+        "horizon_min": 60
+      },
+      {
+        "feature": "current_range_expansion",
+        "importance": 0.006692582989308593,
+        "importance_std": 0.0026057818716171484,
+        "horizon_min": 60
+      },
+      {
+        "feature": "spread_avg",
+        "importance": 0.006321776359446596,
+        "importance_std": 0.004935030131981227,
+        "horizon_min": 60
+      },
+      {
+        "feature": "velocity_change",
+        "importance": 0.004733931190030893,
+        "importance_std": 0.0014373241639925817,
+        "horizon_min": 60
+      },
+      {
+        "feature": "vol_of_vol_20",
+        "importance": 0.004006241995230675,
+        "importance_std": 0.0018505158491023488,
+        "horizon_min": 60
+      },
+      {
+        "feature": "tick_count",
+        "importance": 0.0037700346596318823,
+        "importance_std": 0.004911706375442421,
+        "horizon_min": 60
+      },
+      {
+        "feature": "bb_pctB",
+        "importance": 0.0037689056813948072,
+        "importance_std": 0.0024798839745293283,
+        "horizon_min": 60
+      },
+      {
+        "feature": "signed_body_to_range",
+        "importance": 0.003409137949850827,
+        "importance_std": 0.003767341372961223,
+        "horizon_min": 60
+      },
+      {
+        "feature": "max_run_dn_pips_intrabar",
+        "importance": 0.0033504310815235527,
+        "importance_std": 0.000582503850201967,
+        "horizon_min": 60
+      },
+      {
+        "feature": "directional_exhaustion",
+        "importance": 0.0031822133242012107,
+        "importance_std": 0.001866161719945387,
+        "horizon_min": 60
+      },
+      {
+        "feature": "max_run_up_pips_intrabar",
+        "importance": 0.0029439989161809343,
+        "importance_std": 0.003083184300307961,
+        "horizon_min": 60
+      },
+      {
+        "feature": "adx14",
+        "importance": 0.0012688460964322746,
+        "importance_std": 0.0009467015899396284,
+        "horizon_min": 60
+      },
+      {
+        "feature": "vel_ratio_2nd_to_1st",
+        "importance": 0.0005368918727365557,
+        "importance_std": 0.0028451619069382356,
+        "horizon_min": 60
+      }
+    ]
+  }
+}

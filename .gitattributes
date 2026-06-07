@@ -1,0 +1,8 @@
+VECTOR80/generated/*.joblib filter=lfs diff=lfs merge=lfs -text
+VECTOR80/research/**/*.csv filter=lfs diff=lfs merge=lfs -text
+VECTOR80/research/**/*.gz filter=lfs diff=lfs merge=lfs -text
+VECTOR80/research/**/*.joblib filter=lfs diff=lfs merge=lfs -text
+VECTOR80/models/**/*.pkl filter=lfs diff=lfs merge=lfs -text
+VECTOR80/models/**/*.joblib filter=lfs diff=lfs merge=lfs -text
+VECTOR80/generated/*.csv filter=lfs diff=lfs merge=lfs -text
+VECTOR80/generated/*.gz filter=lfs diff=lfs merge=lfs -text

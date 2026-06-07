@@ -1,0 +1,56 @@
+{
+  "year": 2023,
+  "source_tick_files": [
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230101_20230201_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230201_20230301_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230301_20230401_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230401_20230501_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230501_20230601_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230601_20230701_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230701_20230801_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230801_20230901_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20230901_20231001_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20231001_20231101_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20231101_20231201_exclusive.csv.gz",
+    "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/.parts/EURUSD_TICK_20231201_20240101_exclusive.csv.gz"
+  ],
+  "output": "/home/cmake/VectorShared/research/dukascopy/EURUSD/2023_2024/broker_adjusted/EURUSD_M5_broker_adjusted_2023.csv.gz",
+  "rows": 74640,
+  "start": "2023-01-01T22:00:00+00:00",
+  "end": "2023-12-29T21:55:00+00:00",
+  "mapped_features": [
+    "tick_count",
+    "median_tick_interval_ms",
+    "max_tick_interval_ms",
+    "spread_avg",
+    "spread_max",
+    "bid_aggressor_pct",
+    "ask_aggressor_pct",
+    "imbalance",
+    "tick_velocity_first_half",
+    "tick_velocity_second_half",
+    "vel_ratio_2nd_to_1st",
+    "max_run_up_pips_intrabar",
+    "max_run_dn_pips_intrabar",
+    "ticks_at_high_pct",
+    "ticks_at_low_pct"
+  ],
+  "price_domain": "Dukascopy midpoint OHLC",
+  "volume_domain": "Dukascopy quoted bid/ask volume, not calibrated",
+  "feature_domain": "RoboForex ECN quantile-calibrated",
+  "calibration_source_periods": [
+    "2025-12",
+    "2026-04 through 2026-06"
+  ],
+  "unmapped_fields": [
+    "datetime",
+    "open",
+    "high",
+    "low",
+    "close",
+    "bid_volume",
+    "ask_volume"
+  ],
+  "projection_assumption": "The Dukascopy-to-RoboForex feature relationship measured in the 2025-2026 overlap is assumed stable when projected back to this year.",
+  "warning": "This is not a historical RoboForex tick feed. It is a Dukascopy M5 price series with selected tick features mapped to the broker domain."
+}

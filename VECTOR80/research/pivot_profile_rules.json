@@ -1,0 +1,78 @@
+{
+  "buy_rules": [
+    [
+      "atr5 \u2265 7.5",
+      "short-period volatility expansion"
+    ],
+    [
+      "range_pips \u2265 9",
+      "decisive confirmation candle"
+    ],
+    [
+      "confirm_lag \u2264 8 bars",
+      "retracement completed quickly"
+    ],
+    [
+      "bb_width_pips \u2265 33",
+      "Bollinger bands wide (vol regime)"
+    ],
+    [
+      "realized_vol_20 \u2265 4.5",
+      "realised vol above flat-market level"
+    ],
+    [
+      "dist_to_today_low_pips \u2265 40",
+      "pivot is materially above session low"
+    ],
+    [
+      "stoch_k \u2264 60",
+      "not in overbought zone"
+    ],
+    [
+      "dist_to_20bar_low_pips \u2265 20",
+      "price has retraced from recent extreme"
+    ]
+  ],
+  "sell_rules": [
+    [
+      "atr5 \u2265 7.5",
+      "short-period volatility expansion"
+    ],
+    [
+      "range_pips \u2265 9",
+      "decisive confirmation candle"
+    ],
+    [
+      "confirm_lag \u2264 8 bars",
+      "retracement completed quickly"
+    ],
+    [
+      "bb_width_pips \u2265 33",
+      "Bollinger bands wide (vol regime)"
+    ],
+    [
+      "realized_vol_20 \u2265 4.5",
+      "realised vol above flat-market level"
+    ],
+    [
+      "dist_to_today_low_pips \u2265 40",
+      "position vs daily structure"
+    ],
+    [
+      "minus_di \u2265 24",
+      "downside DI pressure"
+    ],
+    [
+      "dist_to_20bar_high_pips \u2265 20",
+      "price has retraced from recent extreme"
+    ]
+  ],
+  "scoring": "sum of true rules, 0..8",
+  "operating_thresholds": "score >= 4 for selective trade; >= 5 for high-quality only",
+  "stop_target": {
+    "TP_pips": 15,
+    "SL_pips": 10,
+    "timeout_bars": 24
+  },
+  "split": "2025-07-01"
+}

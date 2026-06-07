@@ -1,0 +1,77 @@
+{
+  "name": "VECTOR80_ZZLINES_CODE_READY",
+  "symbol": "EURUSD",
+  "timeframe": "M5",
+  "indicator": "ZigZag Lines MTF for MT5",
+  "zigzag_settings": {
+    "Depth": 12,
+    "Deviation": 5,
+    "Backstep": 3
+  },
+  "entry_offsets_m5": [
+    0,
+    1,
+    2
+  ],
+  "same_side_cooldown_minutes": 30,
+  "features_source": "EURUSD_M5_FULL_PANEL feature set; broker export must reproduce these columns",
+  "model_export_note": "sklearn models require ONNX export or equivalent MQL implementation before live EA inference",
+  "engines": [
+    {
+      "engine_id": "BUY_LL_HGB_088",
+      "side": "BUY",
+      "target_label": "LL",
+      "group_type": "label",
+      "group_key": "LL",
+      "model_type": "HistGradientBoostingClassifier",
+      "threshold": 0.88,
+      "stop_pips": 5,
+      "target_r": 1.0,
+      "horizon_minutes": 120
+    },
+    {
+      "engine_id": "BUY_LL_HIGHVOL_RF_085",
+      "side": "BUY",
+      "target_label": "LL",
+      "group_type": "label_vol",
+      "group_key": "LL|HIGH",
+      "model_type": "RandomForestClassifier",
+      "threshold": 0.85,
+      "stop_pips": 5,
+      "target_r": 1.0,
+      "horizon_minutes": 120
+    },
+    {
+      "engine_id": "SELL_HH_BULLCONT_LONDON_HGB_096",
+      "side": "SELL",
+      "target_label": "HH",
+      "group_type": "label_trade_context_session",
+      "group_key": "HH|BULL_CONTINUATION_HIGH|LONDON",
+      "model_type": "HistGradientBoostingClassifier",
+      "threshold": 0.96,
+      "stop_pips": 8,
+      "target_r": 1.0,
+      "horizon_minutes": 120
+    },
+    {
+      "engine_id": "BUY_HL_HGB_090",
+      "side": "BUY",
+      "target_label": "HL",
+      "group_type": "label",
+      "group_key": "HL",
+      "model_type": "HistGradientBoostingClassifier",
+      "threshold": 0.9,
+      "stop_pips": 5,
+      "target_r": 1.0,
+      "horizon_minutes": 120
+    }
+  ],
+  "validation": {
+    "oos_start": "2026-03-01",
+    "oos_end": "2026-06-01 23:55:00",
+    "signals": 26,
+    "hits": 22,
+    "precision": 0.8461538461538461,
+    "monthly_min_precision_for_months_ge3_signals": 0.8
+  }
+}

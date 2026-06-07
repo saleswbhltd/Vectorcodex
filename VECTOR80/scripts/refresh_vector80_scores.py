@@ -101,7 +101,7 @@ def model_for(name: str):
             max_depth=11,
             min_samples_leaf=14,
             class_weight="balanced_subsample",
-            n_jobs=-1,
+            n_jobs=2,
             random_state=42,
         )
     if name == "extra":
@@ -110,7 +110,7 @@ def model_for(name: str):
             max_depth=12,
             min_samples_leaf=10,
             class_weight="balanced",
-            n_jobs=-1,
+            n_jobs=2,
             random_state=42,
         )
     raise ValueError(name)
@@ -121,6 +121,9 @@ def read_ticks(path: Path) -> pd.DataFrame:
     if ticks.empty:
         raise SystemExit(f"tick export is empty: {path}")
     ticks["datetime"] = pd.to_datetime(ticks["datetime"]).dt.tz_localize(None)
+    if "time_msc" in ticks.columns:
+        millis = pd.to_numeric(ticks["time_msc"], errors="coerce").fillna(0).astype("int64") % 1000
+        ticks["datetime"] += pd.to_timedelta(millis, unit="ms")
     ticks = ticks.sort_values("datetime").reset_index(drop=True)
     ticks = ticks[ticks["mid"].astype(float) > 0].copy()
     if ticks.empty:

@@ -1,0 +1,72 @@
+==============================================================================
+VECTOR signal research — pivot quality analysis
+==============================================================================
+Dataset: EURUSD M5 2025-01-22 → 2025-12-31  (69,760 bars)
+Pivot detection: pip-threshold ZigZag at 15 pips
+Pivots found: 3,020  (HH/HL/LH/LL only)
+Good-pivot rule: TP=15pip hit before SL=10pip within 24 M5 bars (2h)
+Baseline good rate (no filter): 30.0%
+
+Side splits:
+  SELL pivots (HH/LH): n=1510  baseline good = 28.5%
+  BUY  pivots (HL/LL): n=1510   baseline good = 31.5%
+
+Top SELL discriminators (one-feature AUC):
+  atr14_pips            AUC=0.596  good=   +7.59 bad=   +6.43
+  range_pips            AUC=0.587  good=   +9.49 bad=   +8.35
+  confirm_lag           AUC=0.582  good=   +8.39 bad=  +15.79
+  bars_since_prev       AUC=0.565  good=  +24.19 bad=  +35.49
+  minus_di              AUC=0.564  good=  +24.62 bad=  +26.23
+  bb_width_pips         AUC=0.564  good=  +34.82 bad=  +30.17
+  body_pips             AUC=0.563  good=   -5.18 bad=   -4.26
+  plus_di               AUC=0.556  good=  +21.95 bad=  +20.79
+
+Top BUY discriminators (one-feature AUC):
+  range_pips            AUC=0.600  good=  +10.24 bad=   +8.38
+  atr14_pips            AUC=0.598  good=   +7.45 bad=   +6.45
+  confirm_lag           AUC=0.597  good=   +8.05 bad=  +14.03
+  bb_width_pips         AUC=0.583  good=  +35.00 bad=  +30.02
+  stoch_k               AUC=0.570  good=  +56.81 bad=  +62.39
+  stoch_d               AUC=0.561  good=  +49.88 bad=  +55.03
+  body_pips             AUC=0.556  good=   +5.26 bad=   +4.35
+  bars_since_prev       AUC=0.549  good=  +27.36 bad=  +35.67
+
+--- SELL ensemble (top 12 features) ---
+  Cross-val AUC: Logistic=0.611  RandomForest=0.588
+  Base rate of good: 28.5%
+  RF feature importance (top):
+    atr14_pips                0.157
+    range_pips                0.126
+    minus_di                  0.110
+    body_pips                 0.092
+    bb_width_pips             0.079
+    rsi14                     0.077
+    stoch_k                   0.073
+    plus_di                   0.067
+    confirm_lag               0.061
+    stoch_d                   0.057
+  Threshold → precision / coverage:
+    thresh=0.30  n= 669  good%=42.5  cov%=44.3
+    thresh=0.35  n= 309  good%=53.1  cov%=20.5
+    thresh=0.40  n=  52  good%=71.2  cov%=3.4
+    thresh=0.45  n=   1  good%=100.0  cov%=0.1
+
+--- BUY ensemble (top 12 features) ---
+  Cross-val AUC: Logistic=0.589  RandomForest=0.604
+  Base rate of good: 31.5%
+  RF feature importance (top):
+    range_pips                0.193
+    atr14_pips                0.150
+    confirm_lag               0.095
+    stoch_k                   0.084
+    bb_width_pips             0.076
+    stoch_d                   0.070
+    body_pips                 0.070
+    macd_hist                 0.067
+    rsi14                     0.064
+    bb_pctB                   0.054
+  Threshold → precision / coverage:
+    thresh=0.30  n= 963  good%=40.6  cov%=63.8
+    thresh=0.35  n= 710  good%=44.2  cov%=47.0
+    thresh=0.40  n= 197  good%=65.5  cov%=13.0
+    thresh=0.45  n=   3  good%=100.0  cov%=0.2

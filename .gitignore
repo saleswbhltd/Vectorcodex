@@ -7,4 +7,3 @@ shared/
 **/*.pyc
 *.bundle
 VECTOR80/.codex/
-VECTOR80/generated/*_diagnostics.csv

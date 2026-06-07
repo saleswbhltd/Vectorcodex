@@ -1,0 +1,172 @@
+{
+  "sell": {
+    "side": "SELL",
+    "features": [
+      "atr5",
+      "range_pips",
+      "confirm_lag",
+      "bb_width_pips",
+      "bars_since_prev",
+      "vol_of_vol_20",
+      "dist_to_20bar_low_pips",
+      "dist_to_today_low_pips",
+      "minus_di",
+      "plus_di"
+    ],
+    "feature_means": {
+      "atr5": 8.562895956167177,
+      "range_pips": 9.775433231396535,
+      "confirm_lag": 9.256880733944953,
+      "bb_width_pips": 35.639364579001025,
+      "bars_since_prev": 23.33639143730887,
+      "vol_of_vol_20": 0.7666175310907238,
+      "dist_to_20bar_low_pips": 15.549643221202853,
+      "dist_to_today_low_pips": 49.25840978593272,
+      "minus_di": 24.73129204994903,
+      "plus_di": 21.71774240672783
+    },
+    "feature_stds": {
+      "atr5": 4.7310226180180734,
+      "range_pips": 5.900845491422034,
+      "confirm_lag": 46.33234621586208,
+      "bb_width_pips": 26.631638573992458,
+      "bars_since_prev": 69.24222865549686,
+      "vol_of_vol_20": 0.7357009975092659,
+      "dist_to_20bar_low_pips": 18.238119514919756,
+      "dist_to_today_low_pips": 52.60149068944287,
+      "minus_di": 8.536003315432097,
+      "plus_di": 7.718170754874403
+    },
+    "coefs": [
+      [
+        "atr5",
+        0.1824331105438471
+      ],
+      [
+        "range_pips",
+        -0.02567230736905444
+      ],
+      [
+        "confirm_lag",
+        -0.30843149120318875
+      ],
+      [
+        "bb_width_pips",
+        0.0531653742902429
+      ],
+      [
+        "bars_since_prev",
+        -0.057710531799003484
+      ],
+      [
+        "vol_of_vol_20",
+        -0.011955257584944774
+      ],
+      [
+        "dist_to_20bar_low_pips",
+        -0.15645506069506174
+      ],
+      [
+        "dist_to_today_low_pips",
+        0.08833106482853749
+      ],
+      [
+        "minus_di",
+        -0.06042648734336344
+      ],
+      [
+        "plus_di",
+        0.06121972919315582
+      ]
+    ],
+    "intercept": -0.8227045715785921
+  },
+  "buy": {
+    "side": "BUY",
+    "features": [
+      "atr5",
+      "range_pips",
+      "confirm_lag",
+      "bb_width_pips",
+      "realized_vol_20",
+      "dist_to_5bar_low_pips",
+      "dist_to_today_low_pips",
+      "stoch_k",
+      "minus_di",
+      "plus_di"
+    ],
+    "feature_means": {
+      "atr5": 8.538348617107944,
+      "range_pips": 9.682892057026475,
+      "confirm_lag": 7.607942973523421,
+      "bb_width_pips": 35.393751184317715,
+      "realized_vol_20": 5.022667227087577,
+      "dist_to_5bar_low_pips": 14.752647657841141,
+      "dist_to_today_low_pips": 52.36863543788187,
+      "stoch_k": 55.8388985101833,
+      "minus_di": 21.500251764765785,
+      "plus_di": 24.921287387983707
+    },
+    "feature_stds": {
+      "atr5": 4.6423086959216855,
+      "range_pips": 6.03033848696495,
+      "confirm_lag": 34.55495428482109,
+      "bb_width_pips": 26.77202431209424,
+      "realized_vol_20": 3.039995331550628,
+      "dist_to_5bar_low_pips": 7.32393949532983,
+      "dist_to_today_low_pips": 50.70365354350074,
+      "stoch_k": 23.697179569944726,
+      "minus_di": 7.998026343241067,
+      "plus_di": 7.83601971550287
+    },
+    "coefs": [
+      [
+        "atr5",
+        0.09515279330860633
+      ],
+      [
+        "range_pips",
+        0.11485079794828477
+      ],
+      [
+        "confirm_lag",
+        -0.05787333685204043
+      ],
+      [
+        "bb_width_pips",
+        -0.07213865246840838
+      ],
+      [
+        "realized_vol_20",
+        -0.12072000557802715
+      ],
+      [
+        "dist_to_5bar_low_pips",
+        0.007441525827594974
+      ],
+      [
+        "dist_to_today_low_pips",
+        0.12949545501013532
+      ],
+      [
+        "stoch_k",
+        0.03003357561120638
+      ],
+      [
+        "minus_di",
+        0.13307525557629923
+      ],
+      [
+        "plus_di",
+        -0.000642761450699709
+      ]
+    ],
+    "intercept": -0.6011671542700274
+  },
+  "config": {
+    "TP_pips": 15,
+    "SL_pips": 10,
+    "lookahead_bars": 24,
+    "split": "2025-07-01"
+  }
+}
