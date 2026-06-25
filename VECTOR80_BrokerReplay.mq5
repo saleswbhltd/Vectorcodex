@@ -31,19 +31,20 @@
 enum ENUM_VECTOR80_SCORE_MODE
 {
    SCORE_EXTERNAL_CSV = 0,
-   SCORE_HEURISTIC_PROXY = 1
+   SCORE_HEURISTIC_PROXY = 1,
+   SCORE_LIQUIDITY_PROXY = 2
 };
 
 input group "=== Model / Signal ==="
-input ENUM_VECTOR80_SCORE_MODE InpScoreMode       = SCORE_EXTERNAL_CSV;
+input ENUM_VECTOR80_SCORE_MODE InpScoreMode       = SCORE_LIQUIDITY_PROXY;
 input string  InpScoreFileCommon                  = "VECTOR80_model_scores.csv";
 input int     InpScoreTimeShiftMin                = 180;     // broker time = research score time + this shift
 input int     InpScoreTimeToleranceMin            = 5;       // small tolerance after fixed shift
-input bool    InpDebugShiftSweep                  = true;
+input bool    InpDebugShiftSweep                  = false;
 input int     InpDebugShiftSweepFromMin           = -360;
 input int     InpDebugShiftSweepToMin             = 360;
 input int     InpDebugShiftSweepStepMin           = 30;
-input bool    InpAllowTrading                     = false;
+input bool    InpAllowTrading                     = true;
 input bool    InpDrawArrows                       = true;
 input int     InpSignalClusterCooldownMin         = 15;      // one trade per same side/group cluster
 input int     InpSameSideCooldownMin              = 0;       // extra same-side cooldown after cluster de-dupe
@@ -82,10 +83,28 @@ input double  InpHeuristicLLThreshold             = 0.88;
 input double  InpHeuristicHLThreshold             = 0.90;
 input double  InpHeuristicHHThreshold             = 0.90;
 
+input group "=== Liquidity Proxy ==="
+input bool    InpLiquidityFallbackOnMissingScore  = true;    // Rescue missing CSV scores using liquidity confluence
+input int     InpLiquidityLookbackBars            = 320;
+input int     InpLiquidityPivotBars               = 3;
+input double  InpLiquidityEqualTolerancePips      = 2.0;
+input double  InpLiquidityMaxDistancePips         = 3.0;
+input double  InpLiquidityMinScore                = 0.55;
+input double  InpLiquidityScoreBoost              = 0.08;
+input bool    InpLiquidityRequireRejectionClose   = false;   // Require sweep/rejection close through zone
+input bool    InpLiquidityUse6EProfile            = true;    // Boost chart liquidity when aligned with 6E profile
+input string  InpLiquidity6EProfileFile           = "6E_profile_levels.csv";
+input bool    InpLiquidity6EUseCommonFiles        = false;
+input double  InpLiquidity6EConfluencePips        = 3.0;
+input double  InpLiquidityTop6EScore              = 0.99;    // EQH BSL + 6E HVN/VAL/POC
+input double  InpLiquidityGeneric6EScoreBoost     = 0.08;    // Lower context boost for non-top 6E confluence
+input int     InpLiquidity6EMaxAgeMinutes       = 20;      // Warn and ignore 6E profile when generated_utc is older than this
+input int     InpLiquidity6EWarnEverySeconds    = 300;     // Throttle missing/stale 6E warnings
+
 input group "=== Logging ==="
-input bool    InpUseCommonFiles                   = true;
-input string  InpEventLogFile                     = "VECTOR80_events.csv";
-input string  InpTradeLogFile                     = "VECTOR80_trades.csv";
+input bool    InpUseCommonFiles                   = false;
+input string  InpEventLogFile                     = "VECTOR80\\LIVE\\VECTOR80_events.csv";
+input string  InpTradeLogFile                     = "VECTOR80\\LIVE\\VECTOR80_trades.csv";
 input bool    InpDebugLogging                     = true;
 
 //──────────────────────────────────────────────────────────────────
@@ -172,6 +191,7 @@ int      g_last_cluster_count = 0;
 
 int g_event_handle = INVALID_HANDLE;
 int g_trade_handle = INVALID_HANDLE;
+datetime g_last_6e_warn_time = 0;
 
 long g_dbg_bars = 0;
 long g_dbg_latest_pivots = 0;
@@ -181,6 +201,8 @@ long g_dbg_cooldown_blocks = 0;
 long g_dbg_cluster_blocks = 0;
 long g_dbg_score_missing = 0;
 long g_dbg_threshold_blocks = 0;
+long g_dbg_liquidity_rescues = 0;
+long g_dbg_liquidity_blocks = 0;
 long g_dbg_signals = 0;
 long g_dbg_trade_attempts = 0;
 long g_dbg_trades_opened = 0;
@@ -329,8 +351,16 @@ string VolRegime()
 // Logging
 //──────────────────────────────────────────────────────────────────
 
+
+void EnsureVector80LocalFolders()
+{
+   FolderCreate("VECTOR80");
+   FolderCreate("VECTOR80\\LIVE");
+}
+
 int FileFlags()
 {
+   EnsureVector80LocalFolders();
    int flags = FILE_READ | FILE_WRITE | FILE_CSV | FILE_SHARE_READ | FILE_ANSI;
    if(InpUseCommonFiles)
       flags |= FILE_COMMON;
@@ -505,6 +535,316 @@ void InitEngines()
 }
 
 //──────────────────────────────────────────────────────────────────
+// Liquidity proxy
+//──────────────────────────────────────────────────────────────────
+
+bool IsLocalHigh(const MqlRates &rates[], int idx, int width, int total)
+{
+   if(idx < width || idx + width >= total)
+      return false;
+   double v = rates[idx].high;
+   for(int k = 1; k <= width; k++)
+   {
+      if(rates[idx - k].high >= v)
+         return false;
+      if(rates[idx + k].high > v)
+         return false;
+   }
+   return true;
+}
+
+bool IsLocalLow(const MqlRates &rates[], int idx, int width, int total)
+{
+   if(idx < width || idx + width >= total)
+      return false;
+   double v = rates[idx].low;
+   for(int k = 1; k <= width; k++)
+   {
+      if(rates[idx - k].low <= v)
+         return false;
+      if(rates[idx + k].low < v)
+         return false;
+   }
+   return true;
+}
+
+bool IsTop6EConfluence(string zone_label, string level_type, bool buy_side_liquidity)
+{
+   if(!buy_side_liquidity)
+      return false;
+   if(StringFind(zone_label, "EQH") < 0)
+      return false;
+   return (level_type == "HVN" || level_type == "VAL" || level_type == "POC");
+}
+
+double SixEContextBoost(string level_type)
+{
+   if(level_type == "HVN" || level_type == "VAL" || level_type == "POC")
+      return InpLiquidityGeneric6EScoreBoost;
+   if(level_type == "VAH")
+      return InpLiquidityGeneric6EScoreBoost * 0.50;
+   if(level_type == "LVN")
+      return InpLiquidityGeneric6EScoreBoost * 0.25;
+   return 0.0;
+}
+
+void Warn6EProfile(string event_type, string note)
+{
+   datetime now = TimeCurrent();
+   int throttle = MathMax(1, InpLiquidity6EWarnEverySeconds);
+   if(g_last_6e_warn_time != 0 && (now - g_last_6e_warn_time) < throttle)
+      return;
+   g_last_6e_warn_time = now;
+   Print("VECTOR80: ", event_type, " ", note);
+   LogDebug(event_type, note);
+}
+
+bool Find6EConfluence(bool buy_side_liquidity, double level, double pivot_price, string zone_label,
+                      double &score_boost, string &six_e_type, bool &top_confluence)
+{
+   score_boost = 0.0;
+   six_e_type = "";
+   top_confluence = false;
+
+   if(!InpLiquidityUse6EProfile || InpLiquidity6EProfileFile == "")
+      return false;
+
+   int flags = FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_SHARE_WRITE;
+   if(InpLiquidity6EUseCommonFiles)
+      flags |= FILE_COMMON;
+
+   ResetLastError();
+   int h = FileOpen(InpLiquidity6EProfileFile, flags, ';');
+   if(h == INVALID_HANDLE)
+   {
+      Warn6EProfile("WARNING_6E_MISSING", StringFormat("file=%s err=%d", InpLiquidity6EProfileFile, GetLastError()));
+      return false;
+   }
+
+   double tolerance = MathMax(InpLiquidity6EConfluencePips * g_pip, _Point * 3.0);
+   bool has_generation_time = false;
+   datetime generated_time = 0;
+   bool found = false;
+   double best_boost = 0.0;
+   string best_type = "";
+   bool best_top = false;
+
+   while(!FileIsEnding(h))
+   {
+      string level_type = FileReadString(h);
+      if(FileIsEnding(h))
+         break;
+      string price_text = FileReadString(h);
+      string tag = FileReadString(h);
+      string updated = FileReadString(h);
+
+      StringTrimLeft(level_type);
+      StringTrimRight(level_type);
+      StringTrimLeft(price_text);
+      StringTrimRight(price_text);
+
+      if(level_type == "generated_utc")
+      {
+         double generated_seconds = StringToDouble(price_text);
+         if(generated_seconds > 0.0)
+         {
+            has_generation_time = true;
+            generated_time = (datetime)generated_seconds;
+         }
+         continue;
+      }
+
+      if(level_type == "" || level_type == "level_type" || price_text == "")
+         continue;
+
+      double six_e_level = StringToDouble(price_text);
+      if(six_e_level <= 0.0)
+         continue;
+
+      bool six_e_buy_side = (six_e_level >= pivot_price);
+      if(six_e_buy_side != buy_side_liquidity)
+         continue;
+      if(MathAbs(six_e_level - level) > tolerance)
+         continue;
+
+      bool is_top = IsTop6EConfluence(zone_label, level_type, buy_side_liquidity);
+      double boost = is_top ? MathMax(0.0, InpLiquidityTop6EScore) : SixEContextBoost(level_type);
+      if(boost <= 0.0)
+         continue;
+
+      if(!found || is_top || boost > best_boost)
+      {
+         found = true;
+         best_boost = boost;
+         best_type = level_type;
+         best_top = is_top;
+      }
+   }
+
+   FileClose(h);
+
+   if(InpLiquidity6EMaxAgeMinutes > 0)
+   {
+      if(!has_generation_time)
+      {
+         Warn6EProfile("WARNING_6E_NO_TIMESTAMP", StringFormat("file=%s", InpLiquidity6EProfileFile));
+         return false;
+      }
+
+      int max_age_seconds = InpLiquidity6EMaxAgeMinutes * 60;
+      int age_seconds = (int)(TimeGMT() - generated_time);
+      if(age_seconds < 0)
+         age_seconds = 0;
+      if(age_seconds > max_age_seconds)
+      {
+         Warn6EProfile("WARNING_6E_STALE", StringFormat("file=%s age_min=%d max_min=%d generated=%s",
+                        InpLiquidity6EProfileFile, age_seconds / 60, InpLiquidity6EMaxAgeMinutes, TS(generated_time)));
+         return false;
+      }
+   }
+
+   if(!found)
+      return false;
+
+   score_boost = best_boost;
+   six_e_type = best_type;
+   top_confluence = best_top;
+   return true;
+}
+
+void UpdateLiquidityBest(bool candidate_ok, bool buy_side_liquidity, double level, double strength, double pivot_price,
+                         bool is_sell, const MqlRates &pivot_bar, double &best_score,
+                         double &best_distance_pips, string label, string &best_label,
+                         bool &best_rejection)
+{
+   if(!candidate_ok || level <= 0.0)
+      return;
+
+   double distance_pips = MathAbs(pivot_price - level) / g_pip;
+   if(distance_pips > InpLiquidityMaxDistancePips)
+      return;
+
+   bool rejection = false;
+   if(is_sell)
+      rejection = (pivot_bar.high >= level && pivot_bar.close < level);
+   else
+      rejection = (pivot_bar.low <= level && pivot_bar.close > level);
+
+   if(InpLiquidityRequireRejectionClose && !rejection)
+      return;
+
+   double proximity = 1.0 - MathMin(1.0, distance_pips / MathMax(InpLiquidityMaxDistancePips, 0.1));
+   double score = strength + proximity * 0.25;
+   if(rejection)
+      score += 0.20;
+
+   double six_e_boost = 0.0;
+   string six_e_type = "";
+   bool top_6e = false;
+   if(Find6EConfluence(buy_side_liquidity, level, pivot_price, label, six_e_boost, six_e_type, top_6e))
+   {
+      if(top_6e)
+      {
+         score = MathMax(score, six_e_boost);
+         label = "TOP_EQH_6E_" + six_e_type + "_BSL";
+      }
+      else
+      {
+         score += six_e_boost;
+         label = "6E_" + six_e_type + "+" + label;
+      }
+   }
+
+   if(score > best_score)
+   {
+      best_score = score;
+      best_distance_pips = distance_pips;
+      best_label = label;
+      best_rejection = rejection;
+   }
+}
+
+bool LiquidityProxyScore(const SEngine &eng, const SPivot &pivot, double &score, string &note)
+{
+   score = 0.0;
+   note = "liquidity_none";
+
+   bool is_sell = (eng.side == "SELL");
+   bool wants_high_liquidity = is_sell;
+   int pivot_shift = iBarShift(_Symbol, InpSignalTF, pivot.time, false);
+   if(pivot_shift < 0)
+      return false;
+
+   int lookback = MathMax(50, InpLiquidityLookbackBars);
+   int total_needed = (int)MathMin(Bars(_Symbol, InpSignalTF), lookback + InpLiquidityPivotBars + 10);
+   if(total_needed <= InpLiquidityPivotBars * 2 + 5)
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   int copied = CopyRates(_Symbol, InpSignalTF, 0, total_needed, rates);
+   if(copied <= InpLiquidityPivotBars * 2 + 5 || pivot_shift >= copied)
+      return false;
+
+   MqlRates pivot_bar = rates[pivot_shift];
+   double best_score = 0.0;
+   double best_distance_pips = 999999.0;
+   string best_label = "";
+   bool best_rejection = false;
+   double tolerance = MathMax(InpLiquidityEqualTolerancePips * g_pip, _Point * 2.0);
+
+   double pdh = iHigh(_Symbol, PERIOD_D1, 1);
+   double pdl = iLow(_Symbol, PERIOD_D1, 1);
+   UpdateLiquidityBest(wants_high_liquidity, true, pdh, 0.66, pivot.price, is_sell, pivot_bar,
+                       best_score, best_distance_pips, "PDH_BSL", best_label, best_rejection);
+   UpdateLiquidityBest(!wants_high_liquidity, false, pdl, 0.66, pivot.price, is_sell, pivot_bar,
+                       best_score, best_distance_pips, "PDL_SSL", best_label, best_rejection);
+
+   double last_high = 0.0;
+   double last_low = 0.0;
+   for(int i = copied - InpLiquidityPivotBars - 1; i >= InpLiquidityPivotBars; i--)
+   {
+      if(IsLocalHigh(rates, i, InpLiquidityPivotBars, copied))
+      {
+         double strength = 0.45;
+         string label = "SWING_BSL";
+         if(last_high > 0.0 && MathAbs(last_high - rates[i].high) <= tolerance)
+         {
+            strength = 0.78;
+            label = "EQH_BSL";
+         }
+         UpdateLiquidityBest(wants_high_liquidity, true, rates[i].high, strength, pivot.price,
+                             is_sell, pivot_bar, best_score, best_distance_pips,
+                             label, best_label, best_rejection);
+         last_high = rates[i].high;
+      }
+
+      if(IsLocalLow(rates, i, InpLiquidityPivotBars, copied))
+      {
+         double strength = 0.45;
+         string label = "SWING_SSL";
+         if(last_low > 0.0 && MathAbs(last_low - rates[i].low) <= tolerance)
+         {
+            strength = 0.78;
+            label = "EQL_SSL";
+         }
+         UpdateLiquidityBest(!wants_high_liquidity, false, rates[i].low, strength, pivot.price,
+                             is_sell, pivot_bar, best_score, best_distance_pips,
+                             label, best_label, best_rejection);
+         last_low = rates[i].low;
+      }
+   }
+
+   if(best_score <= 0.0)
+      return false;
+
+   score = MathMax(0.0, MathMin(0.99, best_score));
+   note = StringFormat("liquidity_proxy label=%s score=%.3f dist_pips=%.1f rejection=%s",
+                       best_label, score, best_distance_pips,
+                       best_rejection ? "true" : "false");
+   return score >= InpLiquidityMinScore;
+}
+//──────────────────────────────────────────────────────────────────
 // Score provider
 //──────────────────────────────────────────────────────────────────
 
@@ -594,21 +934,62 @@ bool GetEngineScore(const SEngine &eng, const SPivot &pivot, datetime bar_time, 
 {
    score = 0.0;
    note = "";
+
+   double liq_score = 0.0;
+   string liq_note = "";
+   bool liquidity_ok = LiquidityProxyScore(eng, pivot, liq_score, liq_note);
+
    if(InpScoreMode == SCORE_EXTERNAL_CSV)
    {
       datetime matched_time = 0;
       if(ExternalScore(bar_time, eng.id, score, matched_time))
       {
          int delta_min = (int)MathAbs((long)(matched_time - bar_time)) / 60;
-         note = StringFormat("external_score shifted_match=%s delta_min=%d shift_min=%d",
-                             TS(matched_time), delta_min, InpScoreTimeShiftMin);
+         if(liquidity_ok)
+            score = MathMin(0.99, score + InpLiquidityScoreBoost * liq_score);
+         note = StringFormat("external_score shifted_match=%s delta_min=%d shift_min=%d %s",
+                             TS(matched_time), delta_min, InpScoreTimeShiftMin,
+                             liquidity_ok ? liq_note : "liquidity_no_confluence");
          return true;
       }
-      note = "missing_external_score";
+
+      if(InpLiquidityFallbackOnMissingScore && liquidity_ok)
+      {
+         score = MathMin(0.99, MathMax(eng.threshold, liq_score));
+         g_dbg_liquidity_rescues++;
+         note = "missing_external_score rescued_by_" + liq_note;
+         return true;
+      }
+
+      if(InpLiquidityFallbackOnMissingScore)
+         g_dbg_liquidity_blocks++;
+      note = "missing_external_score " + (liq_note == "" ? "liquidity_no_confluence" : liq_note);
       return false;
    }
+
+   if(InpScoreMode == SCORE_LIQUIDITY_PROXY)
+   {
+      if(!liquidity_ok)
+      {
+         g_dbg_liquidity_blocks++;
+         note = (liq_note == "" ? "liquidity_no_confluence" : liq_note);
+         return false;
+      }
+      score = MathMin(0.99, MathMax(eng.threshold, liq_score));
+      note = liq_note;
+      return true;
+   }
+
    score = HeuristicScore(eng, pivot);
-   note = "heuristic_proxy_not_validated";
+   if(liquidity_ok)
+   {
+      score = MathMin(0.99, score + InpLiquidityScoreBoost * liq_score);
+      note = "heuristic_proxy_not_validated " + liq_note;
+   }
+   else
+   {
+      note = "heuristic_proxy_not_validated liquidity_no_confluence";
+   }
    return true;
 }
 
@@ -872,7 +1253,7 @@ bool OpenTrade(const SSignal &sig)
       : g_trade.Sell(lots, _Symbol, entry, sl, tp, sig.engine_id);
    if(!ok)
    {
-      LogEvent("ORDER_FAIL", sig, 0.0, IntegerToString(GetLastError()));
+      LogEvent("ORDER_FAIL", sig, 0.0, StringFormat("last_error=%d retcode=%d", GetLastError(), g_trade.ResultRetcode()));
       return false;
    }
 
@@ -1180,10 +1561,10 @@ void OnDeinit(const int reason)
 {
    int min_shift = g_dbg_min_pivot_shift == 999999 ? -1 : g_dbg_min_pivot_shift;
    string summary = StringFormat(
-      "bars=%I64d latest_pivots=%I64d pivot_too_old=%I64d min_shift=%d max_shift=%d group_matches=%I64d cluster_blocks=%I64d cooldown_blocks=%I64d score_missing=%I64d threshold_blocks=%I64d signals=%I64d trade_attempts=%I64d trades_opened=%I64d retest_queued=%I64d retest_filled=%I64d retest_expired=%I64d",
+      "bars=%I64d latest_pivots=%I64d pivot_too_old=%I64d min_shift=%d max_shift=%d group_matches=%I64d cluster_blocks=%I64d cooldown_blocks=%I64d score_missing=%I64d threshold_blocks=%I64d liquidity_rescues=%I64d liquidity_blocks=%I64d signals=%I64d trade_attempts=%I64d trades_opened=%I64d retest_queued=%I64d retest_filled=%I64d retest_expired=%I64d",
       g_dbg_bars, g_dbg_latest_pivots, g_dbg_pivot_too_old, min_shift, g_dbg_max_pivot_shift,
       g_dbg_group_matches, g_dbg_cluster_blocks, g_dbg_cooldown_blocks, g_dbg_score_missing,
-      g_dbg_threshold_blocks, g_dbg_signals, g_dbg_trade_attempts, g_dbg_trades_opened,
+      g_dbg_threshold_blocks, g_dbg_liquidity_rescues, g_dbg_liquidity_blocks, g_dbg_signals, g_dbg_trade_attempts, g_dbg_trades_opened,
       g_dbg_retest_queued, g_dbg_retest_filled, g_dbg_retest_expired
    );
    LogDebug("SUMMARY", summary);
