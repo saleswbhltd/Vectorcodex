@@ -8,10 +8,9 @@
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Known terminal IDs
+# Vector project terminal ONLY — do NOT add others (5FFA and 72B4 belong to other projects)
 TERMINALS=(
-    "5FFA568149E88FCD5B44D926DCFEAA79"  # original
-    "F1138FAFA5BD40AC6E39B58188E4EE88"  # new demo (2026-06-04)
+    "F1138FAFA5BD40AC6E39B58188E4EE88"
 )
 
 # If user supplied an ID, use only that one

@@ -1,0 +1,7 @@
+combo,trades,win_rate_pct,total_pips,avg_pips,profit_factor,avg_favorable_pips,avg_adverse_pips
+spot_6e_confluence,325,68.3,327.4,1.01,1.65,5.78,5.09
+spot_swing_equal,6183,56.9,1208.9,0.2,1.09,6.51,6.06
+spot_all,6183,56.9,1208.9,0.2,1.09,6.51,6.06
+spot_all_plus_6e,5953,56.5,1063.5,0.18,1.08,6.61,6.15
+6e_only,398,49.5,-116.9,-0.29,0.88,6.66,7.12
+spot_prev_day,312,46.2,-183.2,-0.59,0.78,7.95,7.76

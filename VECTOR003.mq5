@@ -1,12 +1,12 @@
 //+------------------------------------------------------------------+
 //|                                                  VECTOR003.mq5   |
-//|        Per-class GBM scoring + local-extreme entry + 5p trail    |
+//|        Per-class GBM scoring + running-extreme gate + 5p trail   |
 //|                                                                  |
 //|  Architecture:                                                   |
 //|    1. M5 bar closes → EA computes feature vector                 |
 //|    2. EA writes vector003_request.json                           |
 //|    3. Python bridge reads, scores 8 GBMs, writes response        |
-//|    4. EA reads response, validates local-extreme + cooldown      |
+//|    4. EA reads response, validates ZZ-prox + cooldown           |
 //|    5. If valid, MARKET order at bar close                        |
 //|    6. Manage with 5p SL + 5p trail + 60min time stop             |
 //|                                                                  |
@@ -15,9 +15,9 @@
 //|    Walk-forward across 11 months: 11/11 profitable               |
 //+------------------------------------------------------------------+
 #property strict
-#property version   "1.50"
+#property version   "2.31"
 #property copyright "VECTOR research 2026"
-#property description "Per-class GBM + local-3 + market exec + bridge watchdog"
+#property description "Per-class GBM + local-N extreme gate + market exec + bridge watchdog"
 
 #import "shell32.dll"
 int ShellExecuteW(int hwnd, string lpOperation, string lpFile,
@@ -35,7 +35,8 @@ input int     InpMagic          = 20030001;
 input group "=== Signal Filter ==="
 input double  InpThreshold      = 0.70;    // max-prob threshold (0.50 wide, 0.85 strict)
 input int     InpCooldownMin    = 30;      // min minutes between same-direction signals
-input int     InpEntryWindowBars = 15;     // max bars after ZZ pivot to allow entry (ZZ D12 confirms ~5-15 bars late)
+input int     InpLocalN         = 3;       // local-extreme window: BUY only if bar[1].low=min-of-N, SELL only if bar[1].high=max-of-N
+input int     InpEntryWindowBars = 15;     // (unused — kept for compatibility)
 
 input group "=== ZigZag (must match research: D12/Dev5/Back3) ==="
 input string  InpZZName         = "Market\\ZigZag Lines MTF for MT5";
@@ -218,6 +219,49 @@ bool IsLocalLow(int n)
     double l = iLow(_Symbol, PERIOD_M5, 1);
     for(int k = 2; k <= n; k++) if(iLow(_Symbol, PERIOD_M5, k) < l) return false;
     return true;
+}
+
+// Gate 1: pip-threshold ZigZag formation zone — pure price action, no indicator buffers.
+// Walks InpZZScanBars of OHLC data to find the current ZZ state using a InpZZDepth-pip
+// threshold (matching the research D12 = 12-pip ZigZag that trained the GBMs).
+// Returns "BUY" when bar[bar_shift] is within InpZZBackstep bars of the current running LOW.
+// Returns "SELL" when within InpZZBackstep bars of the current running HIGH.
+// Fires on ~36-48 bars/day — the exact population the GBMs were trained on.
+string PipZZFormationSide(int bar_shift)
+{
+    double thresh = (double)InpZZDepth * 10.0 * _Point;   // InpZZDepth pips
+    int n = MathMin(InpZZScanBars, Bars(_Symbol, PERIOD_M5) - bar_shift);
+    if(n < 5) return "";
+
+    int start = bar_shift + n - 1;   // oldest bar (largest shift = farthest back)
+
+    // Seed from oldest bar
+    double h_s = iHigh(_Symbol, PERIOD_M5, start);
+    double l_s = iLow (_Symbol, PERIOD_M5, start);
+    bool   dir_up = (h_s >= l_s);
+    double ext    = dir_up ? h_s : l_s;
+    int    ext_bar = start;
+
+    // Walk forward (decreasing shift = moving toward present)
+    for(int i = start - 1; i >= bar_shift; i--)
+    {
+        double h = iHigh(_Symbol, PERIOD_M5, i);
+        double l = iLow (_Symbol, PERIOD_M5, i);
+        if(dir_up)
+        {
+            if(h > ext) { ext = h; ext_bar = i; }
+            else if(ext - l >= thresh) { dir_up = false; ext = l; ext_bar = i; }
+        }
+        else
+        {
+            if(l < ext) { ext = l; ext_bar = i; }
+            else if(h - ext >= thresh) { dir_up = true; ext = h; ext_bar = i; }
+        }
+    }
+
+    // Formation zone: running extreme was within InpZZBackstep bars of bar[bar_shift]
+    if(ext_bar - bar_shift > InpZZBackstep) return "";
+    return dir_up ? "SELL" : "BUY";
 }
 
 bool IsTimestampLike(double v)
@@ -1013,7 +1057,10 @@ void ManagePositions()
         double fav_pips = is_buy ? (cur - entry) / g_pip : (entry - cur) / g_pip;
         if(fav_pips > g_positions[i].max_favorable_pips)
             g_positions[i].max_favorable_pips = fav_pips;
-        if(g_positions[i].max_favorable_pips > InpTrailPips)
+        // Trail from first favorable pip — no activation gate (v2.31)
+        // Research sim trails immediately: peak tracks max favorable price,
+        // new_sl = peak - trail. The 0.5p hysteresis prevents micro-moves.
+        if(g_positions[i].max_favorable_pips > 0)
         {
             double peak = is_buy
                 ? entry + g_positions[i].max_favorable_pips * g_pip
@@ -1050,14 +1097,8 @@ void CheckSignal()
         return;
     }
 
-    // Gate 1: local-3 extreme (cheap EA-side pre-filter, matches spec Section 6).
-    // Stage 1 OR ensemble is enforced inside the bridge.
-    bool can_sell = IsLocalHigh(3);
-    bool can_buy  = IsLocalLow(3);
-    if(!can_sell && !can_buy)
-        return;
-
     // Build all 70 features at bar[1] (last closed bar = candidate bar)
+    // Gate 1 removed in v2.20: bridge Stage-1 OR-ensemble gates the training universe.
     string features_json = BuildFeaturesJSON(1);
     string response = "";
     if(!QueryBridge(features_json, response))
@@ -1071,10 +1112,30 @@ void CheckSignal()
     }
     if(!fire) return;
 
-    // Gate 4: GBM side must agree with local-extreme side
+    // Local-N extreme gate (v2.30): only trade when bar[1] is the local extreme
+    // Research validated: BUY if bar[1].low=min of last N lows; SELL if bar[1].high=max of last N highs
     bool is_buy = (side == "BUY");
-    if(is_buy  && !can_buy)  return;
-    if(!is_buy && !can_sell) return;
+    if(InpLocalN > 1)
+    {
+        if(is_buy)
+        {
+            int lowest = iLowest(NULL, PERIOD_CURRENT, MODE_LOW, InpLocalN, 1);
+            if(lowest != 1)
+            {
+                PrintFormat("V3: local-N blocks BUY — bar[1] not lowest low of last %d (bar[%d] is)", InpLocalN, lowest);
+                return;
+            }
+        }
+        else
+        {
+            int highest = iHighest(NULL, PERIOD_CURRENT, MODE_HIGH, InpLocalN, 1);
+            if(highest != 1)
+            {
+                PrintFormat("V3: local-N blocks SELL — bar[1] not highest high of last %d (bar[%d] is)", InpLocalN, highest);
+                return;
+            }
+        }
+    }
 
     // EA-side cooldown (defense in depth — bridge also checks)
     datetime last = is_buy ? g_last_buy_signal : g_last_sell_signal;
@@ -1107,10 +1168,10 @@ void UpdatePanel()
         bridge_clr   = clrLimeGreen;
     }
     string txt = StringFormat(
-        "VECTOR003  thr=%.2f  cd=%d  zz_win=%d  SL=%.0f trail=%.0f\n"
+        "VECTOR003  thr=%.2f  cd=%d  localN=%d  SL=%.0f trail=%.0f\n"
         "  %s\n"
         "  signals fired: %d  open positions: %d",
-        InpThreshold, InpCooldownMin, InpEntryWindowBars, InpSLPips, InpTrailPips,
+        InpThreshold, InpCooldownMin, InpLocalN, InpSLPips, InpTrailPips,
         bridge_state,
         g_signals_fired, CountOpen());
     if(ObjectFind(0, name) < 0)
@@ -1220,8 +1281,8 @@ int OnInit()
     }
     g_last_zz_pivot_seen = 0;
 
-    PrintFormat("VECTOR003 v1.50 ready  thr=%.2f cd=%dmin local=3  risk=%.1f%%",
-        InpThreshold, InpCooldownMin, InpEntryWindowBars, InpRiskPct);
+    PrintFormat("VECTOR003 v2.31 ready  thr=%.2f cd=%dmin localN=%d  risk=%.1f%%  [bridge Stage-1 + local-N gate + immediate trail]",
+        InpThreshold, InpCooldownMin, InpLocalN, InpRiskPct);
     PrintFormat("  Bridge state: %s  (last hb ts=%.1f  age=%.1fs)",
         g_bridge_down ? "DOWN" : "OK",
         g_last_heartbeat_ts,
