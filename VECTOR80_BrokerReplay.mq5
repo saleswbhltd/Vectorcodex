@@ -91,7 +91,7 @@ input double  InpLiquidityEqualTolerancePips      = 2.0;
 input double  InpLiquidityMaxDistancePips         = 3.0;
 input double  InpLiquidityMinScore                = 0.55;
 input double  InpLiquidityScoreBoost              = 0.08;
-input bool    InpLiquidityRequireRejectionClose   = false;   // Require sweep/rejection close through zone
+input bool    InpLiquidityRequireRejectionClose   = true;   // Require sweep/rejection close through zone
 input bool    InpLiquidityUse6EProfile            = true;    // Boost chart liquidity when aligned with 6E profile
 input string  InpLiquidity6EProfileFile           = "6E_profile_levels.csv";
 input bool    InpLiquidity6EUseCommonFiles        = false;
@@ -1239,6 +1239,47 @@ void RegisterPosition(ulong ticket, const SSignal &sig, double entry, double sl,
    }
 }
 
+int FindManagedPositionIndex(ulong ticket)
+{
+   for(int i = 0; i < ArraySize(g_positions); i++)
+   {
+      if(g_positions[i].active && g_positions[i].ticket == ticket)
+         return i;
+   }
+   return -1;
+}
+
+void LogDealClose(ulong position_ticket, double close_price, double volume, double profit, string close_note)
+{
+   int idx = FindManagedPositionIndex(position_ticket);
+   string engine_id = "UNKNOWN";
+   string side = "UNKNOWN";
+   double entry = 0.0;
+   double sl = 0.0;
+   double tp = 0.0;
+   double lots = volume;
+   double pips = 0.0;
+
+   if(idx >= 0)
+   {
+      engine_id = g_positions[idx].engine_id;
+      side = g_positions[idx].side;
+      entry = g_positions[idx].entry_price;
+      sl = g_positions[idx].sl;
+      tp = g_positions[idx].tp;
+      lots = g_positions[idx].lots;
+      if(side == "BUY")
+         pips = (close_price - entry) / g_pip;
+      else if(side == "SELL")
+         pips = (entry - close_price) / g_pip;
+      g_positions[idx].active = false;
+   }
+
+   string note = StringFormat("%s close_price=%s profit=%.2f",
+                              close_note, DoubleToString(close_price, _Digits), profit);
+   LogTrade("DEAL_CLOSE", position_ticket, engine_id, side, entry, sl, tp, lots, pips, note);
+}
+
 bool OpenTrade(const SSignal &sig)
 {
    if(SpreadPips() > InpMaxSpreadPips)
@@ -1650,6 +1691,20 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                               result.retcode, result.comment);
    Print("VECTOR80 TRADE_TRANSACTION ", note);
    LogDebug("TRADE_TRANSACTION", note);
+
+   if(trans.deal > 0 && deal_magic == InpMagic && HistoryDealSelect(trans.deal))
+   {
+      ENUM_DEAL_ENTRY entry_type = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(trans.deal, DEAL_ENTRY);
+      if(entry_type == DEAL_ENTRY_OUT || entry_type == DEAL_ENTRY_INOUT)
+      {
+         ulong position_ticket = (ulong)HistoryDealGetInteger(trans.deal, DEAL_POSITION_ID);
+         double close_price = HistoryDealGetDouble(trans.deal, DEAL_PRICE);
+         double close_volume = HistoryDealGetDouble(trans.deal, DEAL_VOLUME);
+         double close_profit = HistoryDealGetDouble(trans.deal, DEAL_PROFIT);
+         string close_comment = HistoryDealGetString(trans.deal, DEAL_COMMENT);
+         LogDealClose(position_ticket, close_price, close_volume, close_profit, close_comment);
+      }
+   }
 }
 
 void OnTick()
