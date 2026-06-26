@@ -371,9 +371,13 @@ void OpenLogs()
 {
    bool new_events = !FileIsExist(InpEventLogFile, InpUseCommonFiles ? FILE_COMMON : 0);
    bool new_trades = !FileIsExist(InpTradeLogFile, InpUseCommonFiles ? FILE_COMMON : 0);
+   ResetLastError();
    g_event_handle = FileOpen(InpEventLogFile, FileFlags(), ',');
-   if(g_event_handle != INVALID_HANDLE)
+   if(g_event_handle == INVALID_HANDLE)
+      Print("VECTOR80 LOG ERROR: failed to open event log file=", InpEventLogFile, " common=", (InpUseCommonFiles ? "true" : "false"), " err=", GetLastError());
+   else
    {
+      Print("VECTOR80 LOG OK: event file=", InpEventLogFile, " handle=", g_event_handle);
       if(new_events)
       {
          FileWrite(g_event_handle, "time", "event", "engine_id", "side", "label", "group_key",
@@ -382,9 +386,13 @@ void OpenLogs()
       else FileSeek(g_event_handle, 0, SEEK_END);
    }
 
+   ResetLastError();
    g_trade_handle = FileOpen(InpTradeLogFile, FileFlags(), ',');
-   if(g_trade_handle != INVALID_HANDLE)
+   if(g_trade_handle == INVALID_HANDLE)
+      Print("VECTOR80 LOG ERROR: failed to open trade log file=", InpTradeLogFile, " common=", (InpUseCommonFiles ? "true" : "false"), " err=", GetLastError());
+   else
    {
+      Print("VECTOR80 LOG OK: trade file=", InpTradeLogFile, " handle=", g_trade_handle);
       if(new_trades)
       {
          FileWrite(g_trade_handle, "time", "event", "ticket", "engine_id", "side",
@@ -402,8 +410,15 @@ void CloseLogs()
 
 void LogEvent(string event_type, const SSignal &sig, double threshold, string note)
 {
+   string line = StringFormat("VECTOR80 EVENT %s engine=%s side=%s label=%s group=%s pivot=%s price=%s score=%.6f threshold=%.3f note=%s magic=%d",
+                              event_type, sig.engine_id, sig.side, sig.label, sig.group_key,
+                              TS(sig.pivot_time), DoubleToString(sig.pivot_price, _Digits), sig.score, threshold, note, InpMagic);
+   Print(line);
    if(g_event_handle == INVALID_HANDLE)
+   {
+      Print("VECTOR80 LOG ERROR: event handle invalid while writing ", event_type, " file=", InpEventLogFile);
       return;
+   }
    FileWrite(g_event_handle, TS(TimeCurrent()), event_type, sig.engine_id, sig.side, sig.label,
              sig.group_key, TS(sig.pivot_time), DoubleToString(sig.pivot_price, _Digits),
              DoubleToString(sig.score, 6), DoubleToString(threshold, 3), note);
@@ -412,8 +427,14 @@ void LogEvent(string event_type, const SSignal &sig, double threshold, string no
 
 void LogDebug(string event_type, string note)
 {
-   if(!InpDebugLogging || g_event_handle == INVALID_HANDLE)
+   if(!InpDebugLogging)
       return;
+   Print("VECTOR80 DEBUG ", event_type, " ", note);
+   if(g_event_handle == INVALID_HANDLE)
+   {
+      Print("VECTOR80 LOG ERROR: event handle invalid while writing debug ", event_type, " file=", InpEventLogFile);
+      return;
+   }
    FileWrite(g_event_handle, TS(TimeCurrent()), event_type, "", "", "", "",
              "", "", "", "", note);
    FileFlush(g_event_handle);
@@ -480,8 +501,14 @@ void DebugShiftSweep(string engine_id, datetime bar_time)
 void LogTrade(string event_type, ulong ticket, string engine_id, string side, double entry,
               double sl, double tp, double lots, double pips, string note)
 {
+   Print(StringFormat("VECTOR80 TRADE %s ticket=%I64u engine=%s side=%s entry=%s sl=%s tp=%s lots=%.2f pips=%.1f note=%s magic=%d",
+                      event_type, ticket, engine_id, side, DoubleToString(entry, _Digits),
+                      DoubleToString(sl, _Digits), DoubleToString(tp, _Digits), lots, pips, note, InpMagic));
    if(g_trade_handle == INVALID_HANDLE)
+   {
+      Print("VECTOR80 LOG ERROR: trade handle invalid while writing ", event_type, " file=", InpTradeLogFile);
       return;
+   }
    FileWrite(g_trade_handle, TS(TimeCurrent()), event_type, IntegerToString((long)ticket),
              engine_id, side, TS(TimeCurrent()), DoubleToString(entry, _Digits),
              DoubleToString(sl, _Digits), DoubleToString(tp, _Digits),
@@ -1248,15 +1275,22 @@ bool OpenTrade(const SSignal &sig)
 
    g_trade.SetExpertMagicNumber(InpMagic);
    g_trade.SetDeviationInPoints(InpSlippagePoints);
+   Print(StringFormat("VECTOR80 ORDER_SUBMIT side=%s lots=%.2f symbol=%s entry=%s sl=%s tp=%s engine=%s magic=%d",
+                      sig.side, lots, _Symbol, DoubleToString(entry, _Digits), DoubleToString(sl, _Digits),
+                      DoubleToString(tp, _Digits), sig.engine_id, InpMagic));
    bool ok = is_buy
       ? g_trade.Buy(lots, _Symbol, entry, sl, tp, sig.engine_id)
       : g_trade.Sell(lots, _Symbol, entry, sl, tp, sig.engine_id);
    if(!ok)
    {
-      LogEvent("ORDER_FAIL", sig, 0.0, StringFormat("last_error=%d retcode=%d", GetLastError(), g_trade.ResultRetcode()));
+      Print(StringFormat("VECTOR80 ORDER_RESULT fail side=%s lots=%.2f retcode=%d desc=%s last_error=%d magic=%d",
+                         sig.side, lots, g_trade.ResultRetcode(), g_trade.ResultRetcodeDescription(), GetLastError(), InpMagic));
+      LogEvent("ORDER_FAIL", sig, 0.0, StringFormat("last_error=%d retcode=%d retcode_desc=%s", GetLastError(), g_trade.ResultRetcode(), g_trade.ResultRetcodeDescription()));
       return false;
    }
 
+   Print(StringFormat("VECTOR80 ORDER_RESULT ok side=%s lots=%.2f order=%I64u deal=%I64u retcode=%d desc=%s magic=%d",
+                      sig.side, lots, g_trade.ResultOrder(), g_trade.ResultDeal(), g_trade.ResultRetcode(), g_trade.ResultRetcodeDescription(), InpMagic));
    ulong ticket = FindNewestPositionTicket();
    if(ticket == 0)
       ticket = g_trade.ResultOrder();
@@ -1589,6 +1623,33 @@ void OnDeinit(const int reason)
    if(g_ema50_h1 != INVALID_HANDLE) IndicatorRelease(g_ema50_h1);
    if(g_ema200_h1 != INVALID_HANDLE) IndicatorRelease(g_ema200_h1);
    CloseLogs();
+}
+
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+{
+   string symbol = trans.symbol;
+   if(symbol == "" && request.symbol != "")
+      symbol = request.symbol;
+   if(symbol != _Symbol)
+      return;
+
+   long deal_magic = -1;
+   string deal_comment = "";
+   if(trans.deal > 0 && HistoryDealSelect(trans.deal))
+   {
+      deal_magic = (long)HistoryDealGetInteger(trans.deal, DEAL_MAGIC);
+      deal_comment = HistoryDealGetString(trans.deal, DEAL_COMMENT);
+   }
+
+   string note = StringFormat("type=%d deal=%I64u order=%I64u symbol=%s price=%s volume=%.2f request_magic=%I64d deal_magic=%I64d request_comment=%s deal_comment=%s retcode=%d retcode_desc=%s",
+                              trans.type, trans.deal, trans.order, symbol, DoubleToString(trans.price, _Digits),
+                              trans.volume, request.magic, deal_magic, request.comment, deal_comment,
+                              result.retcode, result.comment);
+   Print("VECTOR80 TRADE_TRANSACTION ", note);
+   LogDebug("TRADE_TRANSACTION", note);
 }
 
 void OnTick()
