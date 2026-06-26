@@ -23,6 +23,7 @@
 #property description "VECTOR80 ZZLines model-backed pivot EA prototype"
 
 #include <Trade/Trade.mqh>
+#include <VECTOR_TIME/VectorTime.mqh>
 
 //──────────────────────────────────────────────────────────────────
 // Inputs
@@ -106,6 +107,16 @@ input bool    InpUseCommonFiles                   = false;
 input string  InpEventLogFile                     = "VECTOR80\\LIVE\\VECTOR80_events.csv";
 input string  InpTradeLogFile                     = "VECTOR80\\LIVE\\VECTOR80_trades.csv";
 input bool    InpDebugLogging                     = true;
+
+input group "=== Time HUD ==="
+input bool    InpTimeHudEnabled                   = true;
+input ENUM_BASE_CORNER InpTimeHudCorner           = CORNER_LEFT_UPPER;
+input int     InpTimeHudX                         = 10;
+input int     InpTimeHudY                         = 20;
+input int     InpTimeHudFontSize                  = 9;
+input color   InpTimeHudColor                     = clrWhite;
+input color   InpTimeHudOpenColor                 = clrLime;
+input color   InpTimeHudClosedColor               = clrGray;
 
 //──────────────────────────────────────────────────────────────────
 // Constants / globals
@@ -192,6 +203,7 @@ int      g_last_cluster_count = 0;
 int g_event_handle = INVALID_HANDLE;
 int g_trade_handle = INVALID_HANDLE;
 datetime g_last_6e_warn_time = 0;
+CVectorTime g_vector_time;
 
 long g_dbg_bars = 0;
 long g_dbg_latest_pivots = 0;
@@ -347,6 +359,17 @@ string VolRegime()
    return "HIGH";
 }
 
+
+void UpdateTimeHud(const bool force = false)
+{
+   if(!InpTimeHudEnabled)
+      return;
+   g_vector_time.Update(force);
+   g_vector_time.DrawHud(InpTimeHudCorner, InpTimeHudX, InpTimeHudY,
+                         InpTimeHudFontSize, InpTimeHudColor,
+                         InpTimeHudOpenColor, InpTimeHudClosedColor);
+}
+
 //──────────────────────────────────────────────────────────────────
 // Logging
 //──────────────────────────────────────────────────────────────────
@@ -361,7 +384,7 @@ void EnsureVector80LocalFolders()
 int FileFlags()
 {
    EnsureVector80LocalFolders();
-   int flags = FILE_READ | FILE_WRITE | FILE_CSV | FILE_SHARE_READ | FILE_ANSI;
+   int flags = FILE_READ | FILE_WRITE | FILE_CSV | FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_ANSI;
    if(InpUseCommonFiles)
       flags |= FILE_COMMON;
    return flags;
@@ -1606,6 +1629,7 @@ int OnInit()
    InitEngines();
    InitShiftSweep();
    OpenLogs();
+   UpdateTimeHud(true);
 
    g_trade.SetExpertMagicNumber(InpMagic);
    g_trade.SetDeviationInPoints(InpSlippagePoints);
@@ -1627,8 +1651,32 @@ int OnInit()
 
    InitPositions();
    InitPendingSignals();
+
+   SSignal init_sig;
+   init_sig.active = false;
+   init_sig.signal_time = TimeCurrent();
+   init_sig.pivot_time = 0;
+   init_sig.engine_id = "VECTOR80_BrokerReplay";
+   init_sig.side = _Symbol;
+   init_sig.label = EnumToString(InpSignalTF);
+   init_sig.group_key = IntegerToString((int)AccountInfoInteger(ACCOUNT_LOGIN));
+   init_sig.pivot_price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   init_sig.score = 0.0;
+   init_sig.stop_pips = 0.0;
+   init_sig.target_r = 0.0;
+   init_sig.timeout_min = 0;
+   LogEvent("INIT", init_sig, 0.0,
+            StringFormat("score_mode=%s trading=%s rejection_required=%s use_6e=%s event_log=%s trade_log=%s",
+                         EnumToString(InpScoreMode),
+                         InpAllowTrading ? "true" : "false",
+                         InpLiquidityRequireRejectionClose ? "true" : "false",
+                         InpLiquidityUse6EProfile ? "true" : "false",
+                         InpEventLogFile, InpTradeLogFile));
+
    Print("VECTOR80 prototype initialized. ScoreMode=", EnumToString(InpScoreMode),
-         " Trading=", (InpAllowTrading ? "true" : "false"));
+         " Trading=", (InpAllowTrading ? "true" : "false"),
+         " TimeHud=", (InpTimeHudEnabled ? "true" : "false"),
+         " Time=", g_vector_time.Diagnostic());
    return INIT_SUCCEEDED;
 }
 
@@ -1663,6 +1711,7 @@ void OnDeinit(const int reason)
    if(g_atr_m5 != INVALID_HANDLE) IndicatorRelease(g_atr_m5);
    if(g_ema50_h1 != INVALID_HANDLE) IndicatorRelease(g_ema50_h1);
    if(g_ema200_h1 != INVALID_HANDLE) IndicatorRelease(g_ema200_h1);
+   g_vector_time.RemoveHud();
    CloseLogs();
 }
 
@@ -1709,6 +1758,7 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
 
 void OnTick()
 {
+   UpdateTimeHud();
    ManagePositions();
    ManagePendingSignals();
    if(!IsNewBar())

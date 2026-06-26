@@ -40,7 +40,7 @@ MT5_FILES_PATH = (
 PORTABLE_MT5_ROOT = Path.home() / "MT5"
 PORTABLE_MT5_FILES_PATHS = [
     PORTABLE_MT5_ROOT / f"RoboF{i}" / "MQL5" / "Files"
-    for i in range(1, 6)
+    for i in range(1, 7)
 ]
 
 RUN_CONTINUOUSLY = True
